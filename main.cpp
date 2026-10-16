@@ -6,6 +6,7 @@
 #include "diagnostics.h"
 #include "file_storage.h"
 #include "model_info.h"
+#include "practice.h"
 #include "speech_detection.h"
 #include "version.h"
 #include "wav_io.h"
@@ -428,6 +429,9 @@ void capture_notification_callback(const ma_device_notification* notification) {
 struct TranscriptionResult {
     std::string text;
     long long milliseconds;
+    // Every spoken word with Whisper's confidence in it. Practice mode reports
+    // these; the rest of the pipeline only needs the text.
+    std::vector<HeardWord> words;
 };
 
 long long process_cpu_milliseconds() {
@@ -466,8 +470,10 @@ bool run_transcription(
     int thread_count,
     TranscriptionWorkspace& workspace,
     TranscriptionResult& result,
-    bool report_progress = false) {
+    bool report_progress = false,
+    bool literal = false) {
     std::string transcription;
+    result.words.clear();
     const auto transcription_start = std::chrono::steady_clock::now();
     std::size_t completed = 0;
     // A ten minute recording takes minutes to transcribe. Reporting per chunk is
@@ -492,14 +498,32 @@ bool run_transcription(
         params.single_segment = false;
         params.language = "en";
         params.n_threads = thread_count;
+        if (literal) {
+            // Whisper's guesses lean on what it has already written and, when
+            // a decode looks unlikely, on retrying until it reads well. Both
+            // turn a mispronounced word into the intended one, which is the
+            // opposite of what a learner needs to see.
+            params.no_context = true;
+            params.temperature_inc = 0.0f;
+        }
 
         if (whisper_full(context, params, workspace.audio.data(), workspace.audio.size()) != 0) {
             report_error(ErrorCategory::Transcription, "Whisper could not process the speech segment.");
             return false;
         }
 
+        const whisper_token end_of_text = whisper_token_eot(context);
         for (int i = 0; i < whisper_full_n_segments(context); ++i) {
             transcription += whisper_full_get_segment_text(context, i);
+            for (int t = 0; t < whisper_full_n_tokens(context, i); ++t) {
+                // Ids from end-of-text upwards are control and timestamp
+                // tokens, not speech.
+                if (whisper_full_get_token_id(context, i, t) >= end_of_text) {
+                    continue;
+                }
+                accumulate_token(result.words, whisper_full_get_token_text(context, i, t),
+                                 whisper_full_get_token_p(context, i, t));
+            }
         }
 
         ++completed;
@@ -514,6 +538,20 @@ bool run_transcription(
     return true;
 }
 
+// WORDS|word:probability|... The word is everything before the last colon, so
+// a colon inside a word survives; a separator inside one would not, and is
+// replaced.
+void report_heard_words(const std::vector<HeardWord>& words) {
+    std::cout << "WORDS";
+    for (const HeardWord& word : words) {
+        std::string text = word.text;
+        std::replace(text.begin(), text.end(), '|', ' ');
+        std::replace(text.begin(), text.end(), '\n', ' ');
+        std::cout << '|' << text << ':' << std::fixed << std::setprecision(2) << word.probability;
+    }
+    std::cout << std::defaultfloat << std::endl;
+}
+
 bool transcribe(
     whisper_context* context,
     const std::vector<std::int16_t>& samples,
@@ -521,10 +559,16 @@ bool transcribe(
     int thread_count,
     TranscriptionWorkspace& workspace,
     const fs::path& output_path,
-    bool retain_transcript) {
+    bool retain_transcript,
+    bool practice) {
     TranscriptionResult result;
-    if (!run_transcription(context, samples, segments, thread_count, workspace, result, true)) {
+    if (!run_transcription(context, samples, segments, thread_count, workspace, result, true, practice)) {
         return false;
+    }
+
+    // Before FINAL, so a caller can treat FINAL as the end of the result.
+    if (practice) {
+        report_heard_words(result.words);
     }
 
     // FINAL is emitted whether or not the text is kept, so a caller watching for
@@ -795,7 +839,8 @@ bool run_benchmark(
     const std::vector<std::string>& model_paths,
     const std::vector<int>& thread_counts,
     const fs::path& input_path,
-    std::uint32_t sample_rate) {
+    std::uint32_t sample_rate,
+    bool practice) {
     std::vector<std::int16_t> samples;
     std::string reason;
     if (!read_wav(input_path, samples, sample_rate, reason)) {
@@ -851,8 +896,12 @@ bool run_benchmark(
 
             TranscriptionWorkspace workspace;
             TranscriptionResult result;
-            if (!run_transcription(context.get(), speech, speech_range, threads, workspace, result)) {
+            if (!run_transcription(context.get(), speech, speech_range, threads, workspace, result,
+                                   false, practice)) {
                 return false;
+            }
+            if (practice) {
+                report_heard_words(result.words);
             }
 
             PerformanceMetrics metrics;
@@ -909,7 +958,8 @@ bool parse_options(
     bool& retain_audio,
     bool& retain_transcript,
     bool& delete_recordings,
-    bool& show_privacy) {
+    bool& show_privacy,
+    bool& practice_mode) {
     thread_count = default_thread_count();
     compare_mode = false;
     streaming_mode = false;
@@ -925,6 +975,7 @@ bool parse_options(
     retain_transcript = true;
     delete_recordings = false;
     show_privacy = false;
+    practice_mode = false;
 
     for (int i = 1; i < argc; ++i) {
         const std::string argument = argv[i];
@@ -993,6 +1044,8 @@ bool parse_options(
             compare_mode = true;
         } else if (argument == "--stream") {
             streaming_mode = true;
+        } else if (argument == "--practice") {
+            practice_mode = true;
         } else if (argument == "--duration") {
             if (i + 1 >= argc) {
                 std::cerr << "Missing value after --duration." << std::endl;
@@ -1017,17 +1070,19 @@ bool parse_options(
                       << "  ./build-release/audio_to_text_cli MODEL_PATH [--threads N]\n"
                       << "      [--duration 15|45|60|300|600] [--stream] [--model-dir DIR]\n"
                       << "      [--device INDEX]\n"
-                      << "      [--no-retain-audio] [--no-retain-transcript]\n"
+                      << "      [--no-retain-audio] [--no-retain-transcript] [--practice]\n"
                       << "  ./build-release/audio_to_text_cli --list-devices\n"
                       << "  ./build-release/audio_to_text_cli --privacy\n"
                       << "  ./build-release/audio_to_text_cli --version\n"
                       << "  ./build-release/audio_to_text_cli --delete-recordings\n"
                       << "  ./build-release/audio_to_text_cli --benchmark --input SPEECH.wav\n"
-                      << "      MODEL_PATH ... [--threads N]\n"
+                      << "      MODEL_PATH ... [--threads N] [--practice]\n"
                       << "  ./build-release/audio_to_text_cli --compare MODEL_PATH MODEL_PATH ...\n"
                       << "      [--threads N] [--model-dir DIR]\n"
                       << "\nModels must sit inside ./models, the application data directory,\n"
                       << "or a directory approved with --model-dir.\n"
+                      << "--practice transcribes as literally as Whisper allows and reports each\n"
+                      << "word with its confidence, for pronunciation practice.\n"
                       << "Recordings and transcripts are written to the application data directory."
                       << std::endl;
             return false;
@@ -1124,10 +1179,12 @@ int run(int argc, char** argv) {
     bool retain_transcript = true;
     bool delete_recordings = false;
     bool show_privacy = false;
+    bool practice_mode = false;
     if (!parse_options(argc, argv, thread_count, compare_mode, streaming_mode, duration_seconds,
                        model_paths, model_directories, device_index, list_devices,
                        benchmark_mode, input_path, threads_explicit,
-                       retain_audio, retain_transcript, delete_recordings, show_privacy)) {
+                       retain_audio, retain_transcript, delete_recordings, show_privacy,
+                       practice_mode)) {
         for (int i = 1; i < argc; ++i) {
             const std::string argument = argv[i];
             if (argument == "--help" || argument == "-h" ||
@@ -1233,7 +1290,7 @@ int run(int argc, char** argv) {
                 }
             }
         }
-        return run_benchmark(model_paths, thread_counts, input_path, sample_rate) ? 0 : 1;
+        return run_benchmark(model_paths, thread_counts, input_path, sample_rate, practice_mode) ? 0 : 1;
     }
 
     const unsigned int hardware_threads = std::thread::hardware_concurrency();
@@ -1481,7 +1538,7 @@ int run(int argc, char** argv) {
                 speech_chunks.push_back({begin, std::min(begin + transcription_chunk, speech.size())});
             }
             if (!transcribe(context.get(), speech, speech_chunks, thread_count, workspace,
-                            transcript_path, retain_transcript)) {
+                            transcript_path, retain_transcript, practice_mode)) {
                 break;
             }
         }

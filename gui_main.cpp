@@ -1,5 +1,6 @@
 #include "audio_player.h"
 #include "partial_text.h"
+#include "practice.h"
 #include "transcript_library.h"
 #include "ui_state.h"
 #include "version.h"
@@ -22,10 +23,13 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPalette>
 #include <QPlainTextEdit>
 #include <QProcess>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QRandomGenerator>
+#include <QScrollArea>
 #include <QTimer>
 #include <QTime>
 #include <QTextCursor>
@@ -35,6 +39,9 @@
 #include <QSlider>
 #include <QStackedWidget>
 #include <QStatusBar>
+#include <QStyle>
+#include <QStyleFactory>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 namespace {
@@ -51,21 +58,123 @@ QString worker_program() {
 #endif
 }
 
+// One light theme, set on the application so dialogs match the window. The
+// palette is fixed rather than taken from the desktop: these colours assume a
+// light background, and a dark system palette would put pale text on white.
+QString application_style() {
+    return QStringLiteral(R"(
+QMainWindow, QWidget#page { background: #f6f7f9; }
+QWidget#header { background: #ffffff; border-bottom: 1px solid #e3e6eb; }
+QLabel#brand { font-size: 15px; font-weight: 700; color: #111827; }
+QLabel#offline { color: #15803d; background: #ecfdf3; border-radius: 10px; padding: 3px 10px;
+                 font-weight: 600; }
+QToolButton[nav="true"] { border: none; border-radius: 8px; padding: 7px 14px; color: #4b5563;
+                          font-weight: 600; background: transparent; }
+QToolButton[nav="true"]:hover { background: #eef2f7; color: #111827; }
+QToolButton[nav="true"]:checked { background: #e8efff; color: #1d4ed8; }
+QToolButton[nav="true"]:disabled { color: #b6bcc6; }
+QToolButton[nav="true"]::menu-indicator { image: none; width: 0; }
+QLabel#heroTitle { font-size: 26px; font-weight: 700; color: #111827; }
+QLabel#pageTitle { font-size: 18px; font-weight: 700; color: #111827; }
+QLabel#sectionTitle { font-size: 14px; font-weight: 700; color: #111827; }
+QLabel#muted { color: #6b7280; }
+QLabel#sentence { font-size: 22px; font-weight: 600; color: #111827; }
+QLabel#score { font-size: 16px; font-weight: 700; color: #111827; }
+QLabel#resultWords { font-size: 20px; }
+QLabel#badge { background: #e8efff; color: #1d4ed8; border-radius: 14px; font-weight: 700; }
+QFrame#card { background: #ffffff; border: 1px solid #e3e6eb; border-radius: 14px; }
+QFrame#step { background: #ffffff; border: 1px solid #e3e6eb; border-radius: 12px; }
+QGroupBox { background: #ffffff; border: 1px solid #e3e6eb; border-radius: 12px; }
+QPushButton { background: #ffffff; color: #1f2430; border: 1px solid #d5d9e0; border-radius: 8px;
+              padding: 6px 14px; }
+QPushButton:hover { background: #f1f4f8; }
+QPushButton:pressed { background: #e5e9f0; }
+QPushButton:checked { background: #e8efff; border-color: #a9c1fb; color: #1d4ed8; }
+QPushButton:disabled { color: #a0a6b0; background: #f6f7f9; border-color: #e3e6eb; }
+QPushButton#mic { background: #2563eb; color: #ffffff; border: none; border-radius: 28px;
+                  font-size: 16px; font-weight: 700; padding: 0 28px; }
+QPushButton#mic:hover { background: #1d4ed8; }
+QPushButton#mic[recording="true"] { background: #dc2626; }
+QPushButton#mic[recording="true"]:hover { background: #b91c1c; }
+QPushButton#mic:disabled { background: #93b4f5; color: #eef3ff; }
+QPushButton#primary { background: #2563eb; color: #ffffff; border: none; font-weight: 700; }
+QPushButton#primary:hover { background: #1d4ed8; }
+QPushButton#primary:disabled { background: #c7d6fb; color: #f3f6ff; }
+QPushButton#link { border: none; background: transparent; color: #2563eb; font-weight: 600; }
+QPushButton#link:hover { text-decoration: underline; }
+QPlainTextEdit, QListWidget { background: #ffffff; border: 1px solid #d5d9e0; border-radius: 10px; }
+QPlainTextEdit:focus { border-color: #2563eb; }
+QListWidget::item { padding: 8px 10px; }
+QListWidget::item:selected { background: #e8efff; color: #1d4ed8; }
+QStatusBar { background: #ffffff; border-top: 1px solid #e3e6eb; color: #6b7280; }
+QStatusBar QLabel { color: #6b7280; }
+QProgressBar { background: #e5e7eb; border: none; border-radius: 4px; }
+QProgressBar::chunk { background: #2563eb; border-radius: 4px; }
+QScrollArea { background: transparent; border: none; }
+)");
+}
+
+QPalette application_palette() {
+    QPalette palette;
+    palette.setColor(QPalette::Window, QColor("#f6f7f9"));
+    palette.setColor(QPalette::WindowText, QColor("#1f2430"));
+    palette.setColor(QPalette::Base, QColor("#ffffff"));
+    palette.setColor(QPalette::AlternateBase, QColor("#f9fafb"));
+    palette.setColor(QPalette::Text, QColor("#1f2430"));
+    palette.setColor(QPalette::Button, QColor("#ffffff"));
+    palette.setColor(QPalette::ButtonText, QColor("#1f2430"));
+    palette.setColor(QPalette::Highlight, QColor("#2563eb"));
+    palette.setColor(QPalette::HighlightedText, QColor("#ffffff"));
+    palette.setColor(QPalette::ToolTipBase, QColor("#ffffff"));
+    palette.setColor(QPalette::ToolTipText, QColor("#1f2430"));
+    palette.setColor(QPalette::PlaceholderText, QColor("#9ca3af"));
+    palette.setColor(QPalette::Link, QColor("#2563eb"));
+    for (const QPalette::ColorRole role : {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
+        palette.setColor(QPalette::Disabled, role, QColor("#a0a6b0"));
+    }
+    return palette;
+}
+
+// Colours for each mark, shared by the result and its legend.
+QString mark_colour(WordMark mark) {
+    switch (mark) {
+        case WordMark::Correct: return "#15803d";
+        case WordMark::Unclear: return "#b45309";
+        case WordMark::Substituted: return "#b91c1c";
+        case WordMark::Missed: return "#9ca3af";
+        case WordMark::Extra: return "#7c3aed";
+    }
+    return "#1f2430";
+}
+
+QString quoted(const std::string& word) {
+    return QString("“%1”").arg(QString::fromStdString(word).toHtmlEscaped());
+}
+
 }  // namespace
 
 class AudioToTextWindow final : public QMainWindow {
 public:
     AudioToTextWindow() {
         setWindowTitle(QString("Audio to Text %1").arg(AUDIO_TO_TEXT_VERSION));
-        resize(900, 620);
+        resize(1040, 720);
         // Below this the settings row wraps and the transcript stops being usable.
         setMinimumSize(640, 420);
 
         auto* central = new QWidget(this);
         auto* layout = new QVBoxLayout(central);
+        layout->setContentsMargins(24, 20, 24, 12);
         layout->setSpacing(12);
 
         build_menus();
+
+        auto* recorder_title = new QLabel("Record freely", central);
+        recorder_title->setObjectName("pageTitle");
+        layout->addWidget(recorder_title);
+        auto* recorder_note = new QLabel(
+            "Dictate anything. The transcript is saved and appears under Transcripts.", central);
+        recorder_note->setObjectName("muted");
+        layout->addWidget(recorder_note);
 
         // ---- Settings: sized to their content, not stretched across the window.
         model_selector_ = new QComboBox(central);
@@ -120,6 +229,7 @@ public:
         start_font.setBold(true);
         start_button_->setFont(start_font);
         start_button_->setAccessibleName("Start recording");
+        start_button_->setObjectName("primary");
         stop_button_ = new QPushButton("Stop Recording", record_panel);
         stop_button_->setMinimumHeight(36);
         stop_button_->setEnabled(false);
@@ -163,6 +273,7 @@ public:
         auto* transcript_header = new QHBoxLayout();
         transcript_title_ = new QLabel("Transcript", central);
         transcript_title_->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+        transcript_title_->setObjectName("sectionTitle");
         transcript_header->addWidget(transcript_title_);
         transcript_header->addStretch();
         save_button_ = new QPushButton("Save", central);
@@ -202,13 +313,12 @@ public:
 
         auto* library_page = new QWidget(this);
         auto* library_layout = new QVBoxLayout(library_page);
+        library_layout->setContentsMargins(24, 20, 24, 12);
         library_layout->setSpacing(12);
 
         auto* library_header = new QHBoxLayout();
         auto* library_title = new QLabel("Saved transcripts", library_page);
-        QFont library_font = library_title->font();
-        library_font.setBold(true);
-        library_title->setFont(library_font);
+        library_title->setObjectName("pageTitle");
         library_header->addWidget(library_title);
         library_header->addStretch();
         delete_all_button_ = new QPushButton("Delete All Recordings...", library_page);
@@ -272,47 +382,7 @@ public:
         library_body->addWidget(reader, 1);
         library_layout->addLayout(library_body, 1);
 
-        // ---- Landing screen. Deliberately almost empty: it says what the
-        // application is and offers the one thing a new user wants. Recording
-        // happens on the recording screen, not here.
-        auto* home_page = new QWidget(this);
-        auto* home_layout = new QVBoxLayout(home_page);
-        home_layout->addStretch();
-
-        auto* welcome = new QLabel("Audio to Text", home_page);
-        QFont welcome_font = welcome->font();
-        welcome_font.setPointSize(welcome_font.pointSize() + 14);
-        welcome_font.setBold(true);
-        welcome->setFont(welcome_font);
-        welcome->setAlignment(Qt::AlignCenter);
-        home_layout->addWidget(welcome);
-
-        auto* tagline = new QLabel(
-            "Speech to text that runs entirely on this computer.\n"
-            "Your audio is never uploaded.", home_page);
-        tagline->setAlignment(Qt::AlignCenter);
-        home_layout->addWidget(tagline);
-        home_layout->addSpacing(28);
-
-        go_record_button_ = new QPushButton("Start a Recording", home_page);
-        go_record_button_->setMinimumHeight(44);
-        go_record_button_->setMinimumWidth(240);
-        QFont go_font = go_record_button_->font();
-        go_font.setBold(true);
-        go_record_button_->setFont(go_font);
-        go_record_button_->setCursor(Qt::PointingHandCursor);
-        auto* go_row = new QHBoxLayout();
-        go_row->addStretch();
-        go_row->addWidget(go_record_button_);
-        go_row->addStretch();
-        home_layout->addLayout(go_row);
-        home_layout->addSpacing(24);
-
-        home_summary_ = new QLabel(home_page);
-        home_summary_->setAlignment(Qt::AlignCenter);
-        home_summary_->setEnabled(false);
-        home_layout->addWidget(home_summary_);
-        home_layout->addStretch();
+        QWidget* practice_page = build_practice_page();
 
         // ---- Speeches: play back what was actually said. This is the raw
         // capture, not the cleaned copy or the extracted speech; those exist
@@ -326,13 +396,12 @@ public:
 
         auto* speech_page = new QWidget(this);
         auto* speech_layout = new QVBoxLayout(speech_page);
+        speech_layout->setContentsMargins(24, 20, 24, 12);
         speech_layout->setSpacing(12);
 
         auto* speech_header = new QHBoxLayout();
         auto* speech_title = new QLabel("Speeches", speech_page);
-        QFont speech_font = speech_title->font();
-        speech_font.setBold(true);
-        speech_title->setFont(speech_font);
+        speech_title->setObjectName("pageTitle");
         speech_header->addWidget(speech_title);
         speech_header->addStretch();
         speech_layout->addLayout(speech_header);
@@ -424,7 +493,7 @@ public:
         speech_layout->addLayout(speech_body, 1);
 
         stack_ = new QStackedWidget(this);
-        stack_->addWidget(home_page);
+        stack_->addWidget(practice_page);
         stack_->addWidget(central);
         stack_->addWidget(library_page);
         stack_->addWidget(speech_page);
@@ -434,9 +503,6 @@ public:
         context_label_ = new QLabel(this);
         context_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
         statusBar()->addWidget(context_label_, 1);
-        auto* privacy_note = new QLabel("Processed on this computer", this);
-        privacy_note->setEnabled(false);
-        statusBar()->addPermanentWidget(privacy_note);
         update_context_bar();
 
         process_ = new QProcess(this);
@@ -481,7 +547,7 @@ public:
                 [this](int) { refresh_clock(0); });
         refresh_clock(0);
 
-        connect(start_button_, &QPushButton::clicked, this, [this] { start_recording(); });
+        connect(start_button_, &QPushButton::clicked, this, [this] { start_recording(false); });
         connect(stop_button_, &QPushButton::clicked, this, [this] {
             if (state_ == UiState::Recording) {
                 stop_recording();
@@ -511,13 +577,16 @@ public:
             stop_recording();
         });
 
+        next_sentence();
         apply_state(UiState::Ready);
-        // Start on the landing screen, with its own status line.
-        show_home();
+        // Start on the practice screen, with its own status line.
+        show_practice();
     }
 
 private:
-    void start_recording() {
+    // A practice attempt is the same pipeline with a fixed short limit, literal
+    // decoding, and nothing kept: it is a drill, not something to file away.
+    void start_recording(bool practice) {
         // Only these states may begin a recording, so a second click, a stray
         // shortcut, or a timer cannot start a concurrent worker.
         if (!ui_state_may_start(state_)) {
@@ -526,6 +595,7 @@ private:
         if (process_->state() != QProcess::NotRunning) {
             return;
         }
+        practice_mode_ = practice;
 
         transcript_->clear();
         final_transcription_.clear();
@@ -543,17 +613,20 @@ private:
         chunks_done_ = 0;
         chunks_total_ = 0;
         const QString model = model_selector_->currentData().toString();
-        const QString duration = duration_selector_->currentData().toString();
+        const QString duration = practice ? QString::number(practice_limit_seconds)
+                                          : duration_selector_->currentData().toString();
         // No --threads: the worker's measured default is the single source of truth.
         QStringList arguments{model, "--stream", "--duration", duration};
-        if (!keep_audio_->isChecked()) {
+        if (practice) {
+            arguments << "--practice" << "--no-retain-audio" << "--no-retain-transcript";
+        } else if (!keep_audio_->isChecked()) {
             arguments << "--no-retain-audio";
         }
         const int device = device_selector_->currentData().toInt();
         if (device >= 0) {
             arguments << "--device" << QString::number(device);
         }
-        limit_seconds_ = duration_selector_->currentData().toInt();
+        limit_seconds_ = duration.toInt();
         // No waitForStarted: blocking here would freeze the window. The state
         // stays LoadingModel until the worker says it is ready.
         process_->start(worker_program(), arguments);
@@ -680,9 +753,17 @@ private:
             return;
         }
 
+        if (line == "WORDS" || line.startsWith("WORDS|")) {
+            handle_words_line(line);
+            return;
+        }
+
         if (line.startsWith("FINAL|")) {
             final_transcription_ = line.section('|', 1);
             render_final_transcription();
+            if (practice_mode_) {
+                render_practice_result();
+            }
             // Completion is keyed off the transcription itself, not off a file
             // being written, so it still works when retention is off.
             completed_ = true;
@@ -749,33 +830,76 @@ private:
     // screen and does nothing else: pressing Recording must not find that a
     // recording has already started. Each screen owns its own actions.
     void build_menus() {
+        auto* header = new QWidget(this);
+        header->setObjectName("header");
+        auto* bar = new QHBoxLayout(header);
+        bar->setContentsMargins(16, 8, 16, 8);
+        bar->setSpacing(4);
+
+        auto* logo = new QLabel(header);
+        logo->setPixmap(QIcon(":/icons/audio-to-text-512.png").pixmap(22, 22));
+        bar->addWidget(logo);
+        auto* brand = new QLabel("Audio to Text", header);
+        brand->setObjectName("brand");
+        bar->addWidget(brand);
+        bar->addSpacing(24);
+
         auto* screens = new QActionGroup(this);
         screens->setExclusive(true);
 
-        const auto add_screen = [this, screens](const QString& text, const QKeySequence& key,
-                                                auto handler) {
-            QAction* action = menuBar()->addAction(text);
+        const auto add_screen = [this, screens, header, bar](const QString& text, const QKeySequence& key,
+                                                             auto handler) {
+            auto* action = new QAction(text, this);
             action->setCheckable(true);
             action->setShortcut(key);
+            action->setToolTip(QString("%1 (%2)").arg(QString(text).remove('&'),
+                                                      key.toString(QKeySequence::NativeText)));
             screens->addAction(action);
+            addAction(action);
             connect(action, &QAction::triggered, this, handler);
+
+            auto* button = new QToolButton(header);
+            button->setDefaultAction(action);
+            button->setProperty("nav", true);
+            button->setCursor(Qt::PointingHandCursor);
+            bar->addWidget(button);
             return action;
         };
 
-        home_action_ = add_screen("&Home", QKeySequence("Ctrl+1"), [this] { show_home(); });
+        practice_action_ = add_screen("&Practice", QKeySequence("Ctrl+1"), [this] { show_practice(); });
         recorder_action_ = add_screen("&Recording", QKeySequence("Ctrl+2"),
                                       [this] { show_recorder(); });
         history_action_ = add_screen("&Transcripts", QKeySequence("Ctrl+H"),
                                      [this] { show_library(); });
         speeches_action_ = add_screen("&Speeches", QKeySequence("Ctrl+P"),
                                       [this] { show_speeches(); });
+        bar->addStretch();
 
-        QMenu* help_menu = menuBar()->addMenu("&Help");
+        // Said once, where it is always visible, rather than in a footer.
+        auto* offline = new QLabel("\u25cf  Offline", header);
+        offline->setObjectName("offline");
+        offline->setToolTip("Everything runs on this computer. Nothing is uploaded.");
+        bar->addWidget(offline);
+        bar->addSpacing(8);
+
+        auto* help_menu = new QMenu(this);
         help_menu->addAction("&Privacy", this, [this] { show_privacy_notice(); });
         help_menu->addAction("&About", this, [this] { show_about(); });
         help_menu->addSeparator();
-        help_menu->addAction("&Quit", this, [this] { close(); })
-            ->setShortcut(QKeySequence::Quit);
+        QAction* quit = help_menu->addAction("&Quit", this, [this] { close(); });
+        quit->setShortcut(QKeySequence::Quit);
+        // A menu's shortcuts only work while it is open unless the window holds
+        // the action too.
+        addAction(quit);
+        auto* help = new QToolButton(header);
+        help->setText("&Help");
+        help->setMenu(help_menu);
+        help->setPopupMode(QToolButton::InstantPopup);
+        help->setProperty("nav", true);
+        help->setCursor(Qt::PointingHandCursor);
+        bar->addWidget(help);
+
+        setMenuWidget(header);
 
         // Recording keys stay available without occupying the navigation bar.
         record_action_ = new QAction(this);
@@ -783,9 +907,11 @@ private:
         connect(record_action_, &QAction::triggered, this, [this] {
             if (state_ == UiState::Recording) {
                 stop_recording();
+            } else if (stack_->currentIndex() == 0) {
+                start_practice();
             } else {
                 show_recorder();
-                start_recording();
+                start_recording(false);
             }
         });
         addAction(record_action_);
@@ -863,10 +989,25 @@ private:
         // Navigating away mid-recording would hide the controls for the thing
         // still running, so the bar closes while it does.
         history_action_->setEnabled(controls.history);
-        home_action_->setEnabled(!ui_state_is_busy(state));
+        practice_action_->setEnabled(!ui_state_is_busy(state));
         recorder_action_->setEnabled(!ui_state_is_busy(state));
         speeches_action_->setEnabled(controls.history);
         delete_all_button_->setEnabled(controls.delete_recordings);
+
+        const bool idle = !ui_state_is_busy(state);
+        practice_button_->setEnabled(controls.start || controls.stop || controls.cancel);
+        practice_button_->setText(state == UiState::Recording ? "\u25a0  Stop and Check"
+                                  : controls.cancel           ? "Cancel"
+                                                              : "\u25cf  Start Speaking");
+        practice_button_->setProperty("recording", state == UiState::Recording);
+        practice_button_->style()->unpolish(practice_button_);
+        practice_button_->style()->polish(practice_button_);
+        sound_selector_->setEnabled(idle && !own_sentence_->isChecked());
+        next_sentence_->setEnabled(idle);
+        own_sentence_->setEnabled(idle);
+        custom_sentence_->setReadOnly(!idle);
+        try_again_->setEnabled(controls.start);
+        next_after_result_->setEnabled(idle);
 
         apply_indicator(state);
         explain_disabled_controls(state, controls);
@@ -956,14 +1097,14 @@ private:
 
     // ------------------------------------------------------------- history
 
-    void show_home() {
+    void show_practice() {
         if (ui_state_is_busy(state_)) {
             return;
         }
         stop_playback_if_running();
         stack_->setCurrentIndex(0);
-        home_action_->setChecked(true);
-        context_label_->setText("Ready when you are");
+        practice_action_->setChecked(true);
+        context_label_->setText("Practise a sentence, or record freely");
         refresh_home_summary();
         apply_state(state_);
     }
@@ -1199,7 +1340,7 @@ private:
 
     void toggle_library() {
         if (stack_->currentIndex() == 2) {
-            show_home();
+            show_practice();
         } else {
             show_library();
         }
@@ -1562,6 +1703,10 @@ private:
             set_failed("The audio worker exited with code " + QString::number(exit_code) + ".");
             return;
         }
+        if (completed_ && practice_mode_) {
+            set_idle("Done. Read it again, or try another sentence.");
+            return;
+        }
         set_idle(completed_ ? "Transcription complete" : "Ready");
     }
 
@@ -1702,8 +1847,370 @@ private:
         QMainWindow::closeEvent(event);
     }
 
+    // ------------------------------------------------------------ practice
+
+    // The landing screen: a sentence to read, one button, the result word by
+    // word, and how it works. Scrollable, so a short window loses nothing.
+    QWidget* build_practice_page() {
+        auto* content = new QWidget(this);
+        content->setMaximumWidth(820);
+        content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        auto* layout = new QVBoxLayout(content);
+        layout->setContentsMargins(24, 28, 24, 24);
+        layout->setSpacing(16);
+
+        auto* title = new QLabel("Practise your pronunciation", content);
+        title->setObjectName("heroTitle");
+        title->setAlignment(Qt::AlignCenter);
+        layout->addWidget(title);
+        auto* subtitle = new QLabel("Read a sentence aloud and see which words came through, "
+                                    "which changed, and which were missed.", content);
+        subtitle->setObjectName("muted");
+        subtitle->setWordWrap(true);
+        subtitle->setAlignment(Qt::AlignCenter);
+        layout->addWidget(subtitle);
+
+        // ---- The sentence to read.
+        auto* card = new QFrame(content);
+        card->setObjectName("card");
+        auto* card_layout = new QVBoxLayout(card);
+        card_layout->setContentsMargins(24, 18, 24, 18);
+        card_layout->setSpacing(12);
+
+        auto* card_header = new QHBoxLayout();
+        auto* sound_label = new QLabel("Sound:", card);
+        sound_label->setObjectName("muted");
+        sound_selector_ = new QComboBox(card);
+        sound_selector_->addItem("All sounds", QString());
+        for (const std::string& sound : practice_sounds()) {
+            sound_selector_->addItem(QString::fromStdString(sound), QString::fromStdString(sound));
+        }
+        sound_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+        sound_selector_->setAccessibleName("Sound to practise");
+        own_sentence_ = new QPushButton("Type My Own", card);
+        own_sentence_->setCheckable(true);
+        card_header->addWidget(sound_label);
+        card_header->addWidget(sound_selector_);
+        card_header->addStretch();
+        card_header->addWidget(own_sentence_);
+        card_layout->addLayout(card_header);
+
+        sentence_label_ = new QLabel(card);
+        sentence_label_->setObjectName("sentence");
+        sentence_label_->setWordWrap(true);
+        sentence_label_->setAlignment(Qt::AlignCenter);
+        sentence_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        sentence_label_->setMinimumHeight(72);
+        sentence_label_->setAccessibleName("Sentence to read");
+        card_layout->addWidget(sentence_label_);
+
+        custom_sentence_ = new QPlainTextEdit(card);
+        custom_sentence_->setPlaceholderText("Type or paste the sentence you want to practise.");
+        custom_sentence_->setMaximumHeight(96);
+        custom_sentence_->setAccessibleName("Your own sentence");
+        custom_sentence_->hide();
+        card_layout->addWidget(custom_sentence_);
+
+        next_sentence_ = new QPushButton("Another Sentence", card);
+        next_sentence_->setCursor(Qt::PointingHandCursor);
+        auto* next_row = new QHBoxLayout();
+        next_row->addStretch();
+        next_row->addWidget(next_sentence_);
+        next_row->addStretch();
+        card_layout->addLayout(next_row);
+        layout->addWidget(card);
+
+        // ---- The one action.
+        practice_button_ = new QPushButton(content);
+        practice_button_->setObjectName("mic");
+        practice_button_->setCursor(Qt::PointingHandCursor);
+        practice_button_->setMinimumSize(280, 56);
+        practice_button_->setAccessibleName("Start or stop speaking");
+        auto* mic_row = new QHBoxLayout();
+        mic_row->addStretch();
+        mic_row->addWidget(practice_button_);
+        mic_row->addStretch();
+        layout->addLayout(mic_row);
+
+        practice_status_ = new QLabel(practice_instruction, content);
+        practice_status_->setObjectName("muted");
+        practice_status_->setAlignment(Qt::AlignCenter);
+        practice_status_->setWordWrap(true);
+        layout->addWidget(practice_status_);
+
+        // ---- The result, hidden until there is one.
+        result_card_ = new QFrame(content);
+        result_card_->setObjectName("card");
+        auto* result_layout = new QVBoxLayout(result_card_);
+        result_layout->setContentsMargins(24, 18, 24, 18);
+        result_layout->setSpacing(10);
+
+        score_label_ = new QLabel(result_card_);
+        score_label_->setObjectName("score");
+        result_layout->addWidget(score_label_);
+
+        result_words_ = new QLabel(result_card_);
+        result_words_->setObjectName("resultWords");
+        result_words_->setWordWrap(true);
+        result_words_->setTextFormat(Qt::RichText);
+        result_words_->setAccessibleName("Your sentence, word by word");
+        result_layout->addWidget(result_words_);
+
+        result_hints_ = new QLabel(result_card_);
+        result_hints_->setWordWrap(true);
+        result_hints_->setTextFormat(Qt::RichText);
+        result_layout->addWidget(result_hints_);
+
+        heard_label_ = new QLabel(result_card_);
+        heard_label_->setObjectName("muted");
+        heard_label_->setWordWrap(true);
+        heard_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        result_layout->addWidget(heard_label_);
+
+        // Said plainly, because the tool cannot do better than its recogniser.
+        auto* caveat = new QLabel(
+            "Whisper listens for whole words and tends to write the word you meant. A word marked "
+            "check is one it was unsure of: say it again, slowly.", result_card_);
+        caveat->setObjectName("muted");
+        caveat->setWordWrap(true);
+        result_layout->addWidget(caveat);
+
+        QStringList legend;
+        const std::pair<WordMark, const char*> legend_items[] = {
+            {WordMark::Correct, "right"}, {WordMark::Substituted, "changed"},
+            {WordMark::Missed, "missed"}, {WordMark::Unclear, "check"}, {WordMark::Extra, "extra"}};
+        for (const auto& [mark, label] : legend_items) {
+            legend << QString("<span style='color:%1'>■</span> %2").arg(mark_colour(mark), label);
+        }
+        auto* legend_label = new QLabel(legend.join("&nbsp;&nbsp;&nbsp;"), result_card_);
+        legend_label->setObjectName("muted");
+        legend_label->setTextFormat(Qt::RichText);
+        try_again_ = new QPushButton("Try Again", result_card_);
+        next_after_result_ = new QPushButton("Next Sentence", result_card_);
+        auto* result_footer = new QHBoxLayout();
+        result_footer->addWidget(legend_label);
+        result_footer->addStretch();
+        result_footer->addWidget(try_again_);
+        result_footer->addWidget(next_after_result_);
+        result_layout->addLayout(result_footer);
+        result_card_->hide();
+        layout->addWidget(result_card_);
+
+        // ---- How it works, on the screen rather than behind Help.
+        auto* how_title = new QLabel("How it works", content);
+        how_title->setObjectName("sectionTitle");
+        layout->addSpacing(8);
+        layout->addWidget(how_title);
+        auto* steps = new QHBoxLayout();
+        steps->setSpacing(12);
+        const std::pair<const char*, const char*> step_text[] = {
+            {"Read the sentence aloud",
+             "Pick one by the sound you want to work on, or type your own. You have 15 seconds."},
+            {"It listens on this computer",
+             "Whisper transcribes offline. Practice attempts are not saved."},
+            {"See what it heard",
+             "Each word is marked right, changed, missed, or worth checking again."}};
+        int number = 1;
+        for (const auto& [heading, body] : step_text) {
+            auto* step = new QFrame(content);
+            step->setObjectName("step");
+            auto* step_layout = new QVBoxLayout(step);
+            step_layout->setContentsMargins(16, 14, 16, 14);
+            step_layout->setSpacing(6);
+            auto* badge = new QLabel(QString::number(number++), step);
+            badge->setObjectName("badge");
+            badge->setFixedSize(28, 28);
+            badge->setAlignment(Qt::AlignCenter);
+            step_layout->addWidget(badge);
+            auto* step_heading = new QLabel(heading, step);
+            QFont heading_font = step_heading->font();
+            heading_font.setBold(true);
+            step_heading->setFont(heading_font);
+            step_heading->setWordWrap(true);
+            step_layout->addWidget(step_heading);
+            auto* step_body = new QLabel(body, step);
+            step_body->setObjectName("muted");
+            step_body->setWordWrap(true);
+            step_layout->addWidget(step_body);
+            step_layout->addStretch();
+            steps->addWidget(step, 1);
+        }
+        layout->addLayout(steps);
+
+        // Free recording is one click away, not a separate application.
+        go_record_button_ = new QPushButton("Record freely instead →", content);
+        go_record_button_->setObjectName("link");
+        go_record_button_->setCursor(Qt::PointingHandCursor);
+        auto* go_row = new QHBoxLayout();
+        go_row->addStretch();
+        go_row->addWidget(go_record_button_);
+        go_row->addStretch();
+        layout->addLayout(go_row);
+        home_summary_ = new QLabel(content);
+        home_summary_->setObjectName("muted");
+        home_summary_->setAlignment(Qt::AlignCenter);
+        layout->addWidget(home_summary_);
+        layout->addStretch();
+
+        connect(practice_button_, &QPushButton::clicked, this, [this] {
+            if (state_ == UiState::Recording) {
+                stop_recording();
+            } else if (ui_state_is_busy(state_)) {
+                cancel_work();
+            } else {
+                start_practice();
+            }
+        });
+        connect(next_sentence_, &QPushButton::clicked, this, [this] { next_sentence(); });
+        connect(next_after_result_, &QPushButton::clicked, this, [this] { next_sentence(); });
+        connect(try_again_, &QPushButton::clicked, this, [this] { start_practice(); });
+        connect(sound_selector_, qOverload<int>(&QComboBox::currentIndexChanged), this,
+                [this](int) { next_sentence(); });
+        connect(own_sentence_, &QPushButton::toggled, this, [this](bool own) { use_own_sentence(own); });
+
+        auto* holder = new QWidget(this);
+        holder->setObjectName("page");
+        auto* holder_layout = new QHBoxLayout(holder);
+        holder_layout->setContentsMargins(0, 0, 0, 0);
+        holder_layout->addStretch(1);
+        holder_layout->addWidget(content, 10);
+        holder_layout->addStretch(1);
+
+        auto* scroll = new QScrollArea(this);
+        scroll->setWidget(holder);
+        scroll->setWidgetResizable(true);
+        scroll->setFrameShape(QFrame::NoFrame);
+        return scroll;
+    }
+
+    // A different sentence from the chosen sound, never the one just read.
+    void next_sentence() {
+        const QString sound = sound_selector_->currentData().toString();
+        std::vector<const PracticeSentence*> choices;
+        for (const PracticeSentence& sentence : practice_sentences()) {
+            const bool matches = sound.isEmpty() || sound == QString::fromUtf8(sentence.sound);
+            if (matches && QString::fromUtf8(sentence.text) != current_sentence_) {
+                choices.push_back(&sentence);
+            }
+        }
+        if (choices.empty()) {
+            return;
+        }
+        const int pick = QRandomGenerator::global()->bounded(static_cast<int>(choices.size()));
+        current_sentence_ = QString::fromUtf8(choices[static_cast<std::size_t>(pick)]->text);
+        sentence_label_->setText(current_sentence_);
+        result_card_->hide();
+        if (!ui_state_is_busy(state_)) {
+            practice_status_->setText(practice_instruction);
+        }
+    }
+
+    void use_own_sentence(bool own) {
+        sentence_label_->setVisible(!own);
+        next_sentence_->setVisible(!own);
+        custom_sentence_->setVisible(own);
+        sound_selector_->setEnabled(!own);
+        own_sentence_->setText(own ? "Use Built-in Sentences" : "Type My Own");
+        result_card_->hide();
+        if (own) {
+            custom_sentence_->setFocus();
+        }
+    }
+
+    QString practice_sentence() const {
+        return own_sentence_->isChecked() ? custom_sentence_->toPlainText().simplified() : current_sentence_;
+    }
+
+    void start_practice() {
+        if (!ui_state_may_start(state_)) {
+            return;
+        }
+        const QString target = practice_sentence();
+        if (practice_words(target.toStdString()).empty()) {
+            practice_status_->setText("Type a sentence to read first.");
+            custom_sentence_->setFocus();
+            return;
+        }
+        practice_target_ = target;
+        heard_words_.clear();
+        result_card_->hide();
+        start_recording(true);
+    }
+
+    // WORDS|word:probability|... The word is everything before the last colon.
+    void handle_words_line(const QString& line) {
+        heard_words_.clear();
+        const QStringList fields = line.split('|');
+        for (int i = 1; i < fields.size(); ++i) {
+            const int colon = fields.at(i).lastIndexOf(':');
+            if (colon <= 0) {
+                continue;
+            }
+            heard_words_.push_back({fields.at(i).left(colon).toStdString(), fields.at(i).mid(colon + 1).toFloat()});
+        }
+    }
+
+    void render_practice_result() {
+        const std::vector<WordResult> results = compare_words(practice_target_.toStdString(), heard_words_);
+        const std::size_t correct = correct_word_count(results);
+        const std::size_t total = target_word_count(results);
+
+        QStringList words;
+        QStringList hints;
+        for (const WordResult& result : results) {
+            const QString colour = mark_colour(result.mark);
+            const QString expected = QString::fromStdString(result.shown).toHtmlEscaped();
+            const QString heard = QString::fromStdString(result.heard).toHtmlEscaped();
+            switch (result.mark) {
+                case WordMark::Correct:
+                    words << QString("<span style='color:%1'>%2</span>").arg(colour, expected);
+                    break;
+                case WordMark::Unclear:
+                    words << QString("<span style='color:%1; text-decoration:underline'>%2</span>")
+                                 .arg(colour, expected);
+                    hints << QString("Check %1").arg(quoted(result.shown));
+                    break;
+                case WordMark::Substituted:
+                    words << QString("<span style='color:%1; text-decoration:line-through'>%2</span> "
+                                     "<span style='color:%1; font-weight:700'>%3</span>")
+                                 .arg(colour, expected, heard);
+                    hints << QString("Heard %1 for %2").arg(quoted(result.heard), quoted(result.shown));
+                    break;
+                case WordMark::Missed:
+                    words << QString("<span style='color:%1; text-decoration:line-through'>%2</span>")
+                                 .arg(colour, expected);
+                    hints << QString("%1 was not heard").arg(quoted(result.shown));
+                    break;
+                case WordMark::Extra:
+                    words << QString("<span style='color:%1; font-style:italic'>+%2</span>").arg(colour, heard);
+                    hints << QString("Extra word %1").arg(quoted(result.heard));
+                    break;
+            }
+        }
+
+        score_label_->setText(correct == total
+            ? QString("All %1 words came through clearly.").arg(total)
+            : QString("%1 of %2 words came through clearly").arg(correct).arg(total));
+        result_words_->setText(words.join(' '));
+        constexpr int maximum_hints = 5;
+        if (hints.size() > maximum_hints) {
+            const int more = static_cast<int>(hints.size()) - maximum_hints;
+            hints = hints.mid(0, maximum_hints);
+            hints << QString("%1 more").arg(more);
+        }
+        result_hints_->setText(hints.join("&nbsp;&nbsp;·&nbsp;&nbsp;"));
+        result_hints_->setVisible(!hints.isEmpty());
+        heard_label_->setText(final_transcription_.isEmpty()
+            ? QString("Whisper heard nothing it could write down.")
+            : QString("Whisper heard: “%1”").arg(final_transcription_));
+        result_card_->show();
+    }
+
     void set_status(const QString& status) {
         status_label_->setText(status);
+        if (practice_mode_) {
+            practice_status_->setText(status);
+        }
     }
 
     void set_idle(const QString& status) {
@@ -1758,7 +2265,7 @@ private:
     QString model_summary_;
     QString input_summary_;
     QString storage_summary_;
-    QAction* home_action_;
+    QAction* practice_action_;
     QAction* speeches_action_;
     QAction* recorder_action_;
     QAction* record_action_;
@@ -1791,10 +2298,39 @@ private:
     int chunks_done_ = 0;
     int chunks_total_ = 0;
     QElapsedTimer processing_elapsed_;
+
+    QComboBox* sound_selector_;
+    QLabel* sentence_label_;
+    QPlainTextEdit* custom_sentence_;
+    QPushButton* next_sentence_;
+    QPushButton* own_sentence_;
+    QPushButton* practice_button_;
+    QLabel* practice_status_;
+    QFrame* result_card_;
+    QLabel* score_label_;
+    QLabel* result_words_;
+    QLabel* result_hints_;
+    QLabel* heard_label_;
+    QPushButton* try_again_;
+    QPushButton* next_after_result_;
+    QString current_sentence_;
+    QString practice_target_;
+    std::vector<HeardWord> heard_words_;
+    bool practice_mode_ = false;
+    // Long enough for any built-in sentence read slowly, short enough that a
+    // forgotten Stop does not leave the learner waiting.
+    static constexpr int practice_limit_seconds = 15;
+    static constexpr const char* practice_instruction =
+        "Press Start Speaking, read the sentence aloud, then press Stop and Check.";
 };
 
 int main(int argc, char* argv[]) {
     QApplication application(argc, argv);
+    // Fusion draws the same on every platform, which is what lets one style
+    // sheet look right on both Linux and Windows.
+    application.setStyle(QStyleFactory::create("Fusion"));
+    application.setPalette(application_palette());
+    application.setStyleSheet(application_style());
     // Set on the application rather than the window, so message boxes and file
     // dialogs carry it too. On Linux a desktop environment matches a running
     // window to its desktop entry by this name, which is how the launcher and
