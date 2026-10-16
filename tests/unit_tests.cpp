@@ -4,6 +4,7 @@
 #include "diagnostics.h"
 #include "file_storage.h"
 #include "model_info.h"
+#include "practice.h"
 #include "speech_detection.h"
 #include "transcript_library.h"
 #include "wav_io.h"
@@ -874,6 +875,101 @@ void test_companion_audio() {
     CHECK_FALSE("audio is not shared between sessions", companion_audio(other, root).any());
 }
 
+// ---------------------------------------------------------------- practice
+
+std::vector<HeardWord> heard(const std::vector<std::string>& words, float probability = 0.95f) {
+    std::vector<HeardWord> result;
+    for (const std::string& word : words) {
+        result.push_back({word, probability});
+    }
+    return result;
+}
+
+std::string marks(const std::vector<WordResult>& results) {
+    std::string text;
+    for (const WordResult& result : results) {
+        switch (result.mark) {
+            case WordMark::Correct: text += 'C'; break;
+            case WordMark::Unclear: text += 'U'; break;
+            case WordMark::Substituted: text += 'S'; break;
+            case WordMark::Missed: text += 'M'; break;
+            case WordMark::Extra: text += 'E'; break;
+        }
+    }
+    return text;
+}
+
+void test_practice_words() {
+    harness::begin("Practice word normalisation");
+
+    const std::vector<std::string> words = practice_words("Don't stop, Thirty-three THINGS!");
+    CHECK_EQ("punctuation and hyphens split words", words.size(), std::size_t{5});
+    CHECK_TEXT("apostrophes are dropped", words.at(0), "dont");
+    CHECK_TEXT("case is folded", words.at(4), "things");
+    CHECK("empty text has no words", practice_words("  ...  ").empty());
+}
+
+void test_token_accumulation() {
+    harness::begin("Whisper token accumulation");
+
+    std::vector<HeardWord> words;
+    accumulate_token(words, " Th", 0.9f);
+    accumulate_token(words, "ink", 0.3f);
+    accumulate_token(words, ",", 0.1f);
+    accumulate_token(words, " so", 0.8f);
+    CHECK_EQ("a leading space starts a word", words.size(), std::size_t{2});
+    CHECK_TEXT("continuation tokens join the word", words.at(0).text, "Think,");
+    CHECK("the word keeps its weakest spoken token", std::fabs(words.at(0).probability - 0.3f) < 1e-6f);
+    CHECK("punctuation does not lower the probability", words.at(0).probability > 0.2f);
+    accumulate_token(words, "   ", 0.1f);
+    CHECK_EQ("a token of spaces adds nothing", words.size(), std::size_t{2});
+}
+
+void test_word_comparison() {
+    harness::begin("Practice word comparison");
+
+    CHECK_TEXT("a perfect reading is all correct",
+               marks(compare_words("I think so.", heard({"I", "think", "so."}))), "CCC");
+    CHECK_TEXT("a changed word is a substitution, not a miss and an extra",
+               marks(compare_words("I think so", heard({"I", "sink", "so"}))), "CSC");
+    const std::vector<WordResult> changed = compare_words("I think so", heard({"I", "sink", "so"}));
+    CHECK_TEXT("the substitution names what was expected", changed.at(1).expected, "think");
+    CHECK_TEXT("and what was heard", changed.at(1).heard, "sink");
+    CHECK_TEXT("the target's capitals are kept for display",
+               compare_words("I think", heard({"i", "think"})).at(0).shown, "I");
+    CHECK_TEXT("a skipped word is missed",
+               marks(compare_words("the red lorry", heard({"the", "lorry"}))), "CMC");
+    CHECK_TEXT("an added word is extra",
+               marks(compare_words("the lorry", heard({"the", "red", "lorry"}))), "CEC");
+    CHECK_TEXT("a doubtful match is unclear",
+               marks(compare_words("think", heard({"think"}, 0.2f))), "U");
+    CHECK_TEXT("nothing heard misses every word",
+               marks(compare_words("one two", {})), "MM");
+    CHECK_TEXT("heard words are split like the target",
+               marks(compare_words("thirty-three", heard({"thirty-three"}))), "CC");
+
+    const std::vector<WordResult> mixed = compare_words("I think so", heard({"I", "sink", "so", "yes"}));
+    CHECK_EQ("only correct words count", correct_word_count(mixed), std::size_t{2});
+    CHECK_EQ("extras are not target words", target_word_count(mixed), std::size_t{3});
+}
+
+void test_practice_sentences() {
+    harness::begin("Built-in practice sentences");
+
+    CHECK("there are sentences", !practice_sentences().empty());
+    CHECK("sentences are grouped by sound", practice_sounds().size() > 1);
+    bool all_have_words = true;
+    bool none_has_digits = true;
+    for (const PracticeSentence& sentence : practice_sentences()) {
+        const std::string text = sentence.text;
+        all_have_words = all_have_words && practice_words(text).size() >= 4;
+        none_has_digits = none_has_digits &&
+            std::none_of(text.begin(), text.end(), [](unsigned char c) { return std::isdigit(c) != 0; });
+    }
+    CHECK("every sentence has a few words to score", all_have_words);
+    CHECK("no sentence relies on how Whisper writes numbers", none_has_digits);
+}
+
 }  // namespace
 
 int main() {
@@ -895,5 +991,9 @@ int main() {
     test_preview_truncation();
     test_reading_and_deleting();
     test_companion_audio();
+    test_practice_words();
+    test_token_accumulation();
+    test_word_comparison();
+    test_practice_sentences();
     return harness::summary();
 }

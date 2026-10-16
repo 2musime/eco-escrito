@@ -6,12 +6,13 @@ never loads Whisper itself, so the event loop stays free.
 
 ## Screens
 
-Three, one job each, chosen from the bar across the top:
+Four, one job each, chosen from the bar across the top. The screen you are on is
+highlighted in the bar.
 
 | Screen | Holds | Reached by |
 |---|---|---|
-| **Home** | the application's name, what it does, and one button | opens here; `Home`, or `Ctrl+1` |
-| **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, or **Start a Recording** |
+| **Practice** | a sentence to read, one button, the result word by word | opens here; `Practice`, or `Ctrl+1` |
+| **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, or **Record freely instead** |
 | **Transcripts** | the saved list and a reader | `Transcripts`, or `Ctrl+H` |
 | **Speeches** | recordings, and a player for them | `Speeches`, or `Ctrl+P` |
 
@@ -19,9 +20,9 @@ The bar is navigation and nothing else. Pressing **Recording** goes to the
 recording screen; it does not start a recording. Starting is done there, with
 the model, microphone and limit already in view.
 
-Home is deliberately almost empty. It says what the application is, offers the
-one thing someone opening it wants, and gives a count of what is already stored
-so there is a reason to look at the other screens.
+Practice is the landing screen and explains itself: a three-step **How it
+works** strip sits under the result, so a first-time user never needs Help to
+understand what the application does. See [PRACTICE.md](PRACTICE.md).
 
 Navigation closes while a recording or transcription is running. The controls
 for something still running must not be hidden behind another screen.
@@ -33,7 +34,8 @@ the thing it affects:
 
 | Action | Where |
 |---|---|
-| Start, stop, cancel | the recording screen |
+| Choose, type, and read a practice sentence | the practice screen |
+| Start, stop, cancel | the screen that started it |
 | Save, copy the live transcript | beside that transcript |
 | Save, copy, delete one saved transcript | beside the transcript being read |
 | Delete all recordings | the transcripts screen, which is what it empties |
@@ -41,28 +43,43 @@ the thing it affects:
 
 `Help` is the only entry in the bar that opens a menu; the rest switch screens.
 
-## Layout
+## Look
+
+One light theme, applied to the whole application so dialogs match the window.
+The Fusion style draws the same on Linux and Windows, which is what lets one
+style sheet serve both. The palette is fixed rather than taken from the
+desktop: the colours assume a light background, and a dark system palette would
+put pale text on white cards.
+
+- **Header:** the name, the four screens, an **Offline** badge, and Help. The
+  badge replaces the old "Processed on this computer" footer note, so the
+  privacy promise is visible on every screen without being repeated.
+- **Cards:** the practice sentence, its result, the steps, and the record panel
+  each sit on a white card, so related controls read as one thing.
+- **One primary action per screen,** in the accent blue: **Start Speaking** on
+  Practice, **Start Recording** on Recording. Start Speaking turns red while
+  recording and reads **Stop and Check**.
+- **Width:** the practice screen is centred and capped at 820 px, so a
+  full-screen window does not stretch a sentence across 1920 px. It scrolls on
+  a short window.
+
+## Recording screen
 
 ```text
-File   Help                                          menu bar
+Record freely
+Dictate anything. The transcript is saved and appears under Transcripts.
 Model [base.en v]  Microphone [default v]  Limit [15s v]  [x] Keep audio files
 +-------------------------------------------------------------+
-|  Start Recording   Stop Recording     00:23 / 01:00          |
-|  Recording. Speak now.                                       |
+|  [Start Recording]  Stop Recording     00:23 / 01:00         |
+|  * Recording. Speak now.                                     |
 |  ####################-------------------------              |
 +-------------------------------------------------------------+
 Transcript                                        [Save] [Copy]
 +-------------------------------------------------------------+
 |                                                             |
 +-------------------------------------------------------------+
-base (english, 141.1 MB) . Built-in Audio    Processed on this computer
+base (english, 141.1 MB) . Built-in Audio
 ```
-
-Four decisions shape this:
-
-**Secondary actions live in the menu bar.** Privacy and About sit under Help,
-and deleting recordings under File. Deleting every recording is destructive and
-belongs somewhere reached deliberately, not beside the microphone selector.
 
 **Settings are sized to their contents.** A two-item model list stretched across
 the window told nobody anything.
@@ -172,16 +189,16 @@ depends only on `qt6-qtbase-gui`.
 
 ## Keyboard
 
-Every shortcut appears next to its menu entry, so it can be found rather than
-memorised.
+Every screen's shortcut appears in its tooltip in the top bar, so it can be
+found rather than memorised.
 
 | Keys | Action |
 |---|---|
-| `Ctrl+R` | Start recording, or stop one in progress |
+| `Ctrl+R` | Start speaking or recording, or stop one in progress |
 | `Esc` | Cancel whatever the worker is doing |
 | `Ctrl+S` | Save the transcript to a file |
 | `Ctrl+Shift+C` | Copy the whole transcript |
-| `Ctrl+1` | Go to Home |
+| `Ctrl+1` | Go to Practice |
 | `Ctrl+2` | Go to Recording |
 | `Ctrl+H` | Go to saved transcripts |
 | `Ctrl+P` | Go to recordings |
@@ -189,6 +206,8 @@ memorised.
 | `Ctrl+Q` | Quit |
 
 `Ctrl+R` is one action rather than two, so the same key both starts and stops.
+On the practice screen it starts a practice attempt; anywhere else it goes to
+Recording and starts there.
 Plain `Ctrl+C` is left to the transcript for copying a selection, which is why
 copying the whole transcript takes the shifted form.
 
