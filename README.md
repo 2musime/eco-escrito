@@ -36,12 +36,19 @@ bash scripts/install-model.sh base.en --dir models
 
 ## Use
 
-Four screens: **Home**, **Recording**, **Transcripts**, **Speeches**.
+Four screens: **Practice**, **Recording**, **Transcripts**, **Speeches**.
 
-Choose a model, microphone and time limit, record, and the transcript appears.
-Partial text arrives while you speak; the full transcript is written when you
-stop. Past transcripts are readable and deletable under **Transcripts**, and
-recordings can be played back under **Speeches**.
+**Practice** opens first. Pick a sentence by the sound you want to work on, or
+type your own, press **Start Speaking**, read it, and press **Stop and Check**.
+Each word is marked right, changed, missed, or worth checking, so a
+mispronunciation that Whisper quietly "corrected" is still flagged. Practice
+attempts are not saved. See [docs/PRACTICE.md](docs/PRACTICE.md).
+
+**Recording** is free dictation. Choose a model, microphone and time limit,
+record, and the transcript appears. Partial text arrives while you speak; the
+full transcript is written when you stop. Past transcripts are readable and
+deletable under **Transcripts**, and recordings can be played back under
+**Speeches**.
 
 There is also a command-line worker:
 
@@ -50,6 +57,7 @@ There is also a command-line worker:
 ./build-release/audio_to_text_cli --list-devices
 ./build-release/audio_to_text_cli --privacy
 ./build-release/audio_to_text_cli --delete-recordings
+./build-release/audio_to_text_cli --benchmark --input speech.wav --practice models/ggml-small.en.bin
 ```
 
 ## Where your files go
@@ -97,6 +105,7 @@ tests/run_gates.sh --quick  # skip the sanitizer build
 |---|---|
 | Building and dependencies | [docs/BUILDING.md](docs/BUILDING.md) |
 | Interface and keyboard | [docs/GRAPHICAL_INTERFACE.md](docs/GRAPHICAL_INTERFACE.md) |
+| Pronunciation practice | [docs/PRACTICE.md](docs/PRACTICE.md) |
 | Tests | [docs/TESTING.md](docs/TESTING.md) |
 | Quality gates | [docs/QUALITY_GATES.md](docs/QUALITY_GATES.md) |
 | Where files go, and confinement | [docs/FILE_STORAGE.md](docs/FILE_STORAGE.md) |
@@ -113,4 +122,6 @@ tests/run_gates.sh --quick  # skip the sanitizer build
   a Windows machine. The sanitizers and the command-line suite do not run there,
   and the installer is unsigned, so SmartScreen will warn on first run
 - English models (`base.en`, `small.en`); multilingual models load but are untested
+- Practice compares words, not sounds: a mispronounced word that Whisper still
+  recognises confidently is marked right
 - No automated test drives the interface
