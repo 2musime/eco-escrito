@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(EcoEscrito
-    VERSION 1.2.0
-    DESCRIPTION "Offline speech to text"
+    VERSION 1.3.0
+    DESCRIPTION "Offline voice typing and English pronunciation practice"
     HOMEPAGE_URL "https://github.com/2musime/eco-escrito"
     LANGUAGES CXX)
 
