@@ -30,7 +30,6 @@
 #include <QPushButton>
 #include <QRandomGenerator>
 #include <QScrollArea>
-#include <QSettings>
 #include <QTimer>
 #include <QTime>
 #include <QTextCursor>
@@ -123,7 +122,6 @@ QPushButton#welcomePrimary { background: #007aff; color: #ffffff; border: none; 
                              font-weight: 600; padding: 0 22px; }
 QPushButton#welcomePrimary:hover { background: #0062cc; }
 QPushButton#welcomeSecondary { border-radius: 10px; padding: 0 22px; }
-QCheckBox#quiet { color: #6e6e73; }
 QStatusBar::item { border: none; }
 QPushButton#footerLink { border: none; background: transparent; color: #6e6e73; text-decoration: underline;
                          padding: 0 6px; }
@@ -612,17 +610,8 @@ public:
 
         next_sentence();
         apply_state(UiState::Ready);
-        // The welcome page opens first unless its own box says otherwise.
-        const bool welcome = welcome_on_start();
-        {
-            const QSignalBlocker blocker(show_welcome_);
-            show_welcome_->setChecked(welcome);
-        }
-        if (welcome) {
-            show_welcome();
-        } else {
-            show_practice();
-        }
+        // Always open on the welcome page.
+        show_welcome();
     }
 
 private:
@@ -1937,17 +1926,10 @@ private:
         actions->addWidget(practise);
         actions->addStretch();
         layout->addLayout(actions);
-        layout->addSpacing(32);
-
-        show_welcome_ = new QCheckBox("Show this page when Eco-escrito opens", page);
-        show_welcome_->setObjectName("quiet");
-        show_welcome_->setCursor(Qt::PointingHandCursor);
-        layout->addWidget(show_welcome_, 0, Qt::AlignHCenter);
         layout->addStretch(1);
 
         connect(record, &QPushButton::clicked, this, [this] { show_recorder(); });
         connect(practise, &QPushButton::clicked, this, [this] { show_practice(); });
-        connect(show_welcome_, &QCheckBox::toggled, this, [this](bool show) { remember_welcome(show); });
         return page;
     }
 
@@ -1960,27 +1942,6 @@ private:
         welcome_action_->setChecked(true);
         context_label_->setText("Ready");
         apply_state(state_);
-    }
-
-    // The one preference, kept in the data directory with everything else the
-    // application writes, rather than in a configuration directory elsewhere.
-    QString settings_path() const { return data_directory_ + "/settings.ini"; }
-
-    bool welcome_on_start() const {
-        const QSettings settings(settings_path(), QSettings::IniFormat);
-        return settings.value("show_welcome", true).toBool();
-    }
-
-    void remember_welcome(bool show) {
-        if (!ensure_private_directory(fs::path(data_directory_.toStdString()))) {
-            return;
-        }
-        {
-            QSettings settings(settings_path(), QSettings::IniFormat);
-            settings.setValue("show_welcome", show);
-            settings.sync();
-        }
-        QFile::setPermissions(settings_path(), QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     }
 
     // ------------------------------------------------------------ practice
@@ -2375,7 +2336,6 @@ private:
     QStackedWidget* stack_;
     QPushButton* go_record_button_;
     QAction* welcome_action_;
-    QCheckBox* show_welcome_;
     QPushButton* see_all_;
     QPushButton* delete_all_button_;
     QPlainTextEdit* saved_view_;

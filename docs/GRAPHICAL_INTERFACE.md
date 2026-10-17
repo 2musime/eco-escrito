@@ -30,8 +30,6 @@ click away in the bar:
 - the application icon
 - one line: *Your voice, in writing. On your own computer.*
 - **New Recording**, the primary action, and **Practise Pronunciation** beside it
-- **Show this page when Eco-escrito opens**. Turned off, the application opens
-  on Practice. The choice is kept in `<data>/settings.ini`.
 
 A new feature gets a tab in the bar. It earns a button here only if it becomes
 one of the main reasons to open the application.
