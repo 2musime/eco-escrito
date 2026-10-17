@@ -14,7 +14,7 @@ echoed in writing.
 ![Platforms](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-lightgrey)
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C)
 ![Qt 6](https://img.shields.io/badge/Qt-6-41CD52)
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/2musime/eco-escrito?style=social)](https://github.com/2musime/eco-escrito)
 
 ![The Eco-escrito welcome page: "Speak clearly, and keep what you say", with Write by Voice and Practise buttons](docs/images/welcome.png)
@@ -300,7 +300,11 @@ people find it.
 
 ## License
 
-Released under the MIT License.
+Released under the [MIT License](LICENSE). Copyright (c) 2026 David TUMUSIME.
+
+Eco-escrito builds on [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
+(MIT) and [miniaudio](https://miniaud.io/) (public domain or MIT-0), and links
+against [Qt 6](https://www.qt.io/) under the LGPL v3.
 
 ## Acknowledgements
 
