@@ -11,6 +11,7 @@
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDesktopServices>
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QFile>
@@ -42,6 +43,7 @@
 #include <QStyle>
 #include <QStyleFactory>
 #include <QToolButton>
+#include <QUrl>
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -133,9 +135,9 @@ QPushButton#welcomePrimary { background: #007aff; color: #ffffff; border: none; 
 QPushButton#welcomePrimary:hover { background: #0062cc; }
 QPushButton#welcomeSecondary { border-radius: 10px; padding: 0 22px; }
 QStatusBar::item { border: none; }
-QPushButton#footerLink { border: none; background: transparent; color: #6e6e73; text-decoration: underline;
-                         padding: 0 6px; }
-QPushButton#footerLink:hover { color: #1d1d1f; }
+QPushButton#starLink { border: 1px solid #e5e5ea; border-radius: 10px; background: transparent; color: #424245;
+                       padding: 1px 10px; margin: 0 6px; }
+QPushButton#starLink:hover { border-color: #ffcc00; background: #fffbea; color: #1d1d1f; }
 QLabel#footnote { font-size: 12px; color: #8e8e93; padding: 0 8px; }
 )");
 }
@@ -465,14 +467,15 @@ public:
         context_label_ = new QLabel(this);
         context_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
         statusBar()->addWidget(context_label_, 1);
-        auto* privacy_link = new QPushButton("Privacy", this);
-        privacy_link->setObjectName("footerLink");
-        privacy_link->setCursor(Qt::PointingHandCursor);
-        connect(privacy_link, &QPushButton::clicked, this, [this] { show_privacy_notice(); });
-        statusBar()->addPermanentWidget(privacy_link);
-        auto* version = new QLabel(QString("Eco-escrito %1").arg(ECO_ESCRITO_VERSION), this);
-        version->setObjectName("footnote");
-        statusBar()->addPermanentWidget(version);
+        // The one thing a visitor might want to do for the project. It opens in
+        // the user's browser, and only when clicked; the application never
+        // fetches anything. Who made it, the version and privacy are in Help.
+        auto* star_link = new QPushButton("\u2606 Star us on GitHub", this);
+        star_link->setObjectName("starLink");
+        star_link->setCursor(Qt::PointingHandCursor);
+        star_link->setToolTip("Like Eco-escrito? A star helps others find it.");
+        connect(star_link, &QPushButton::clicked, this, [] { open_link(ECO_ESCRITO_HOMEPAGE_URL); });
+        statusBar()->addPermanentWidget(star_link);
         update_context_bar();
 
         process_ = new QProcess(this);
@@ -1726,14 +1729,23 @@ private:
         }
     }
 
+    // Handed to the desktop's browser. Nothing here makes a connection.
+    static void open_link(const char* url) {
+        QDesktopServices::openUrl(QUrl(QString::fromUtf8(url)));
+    }
+
     void show_about() {
         QMessageBox::about(this, "About Eco-escrito",
             QString("<b>Eco-escrito %1</b><br>"
                     "Build %2, %3<br><br>"
                     "Offline speech to text. Audio never leaves this computer.<br><br>"
+                    "Made by %4, who loves building useful things with technology.<br>"
+                    "<a href='%5'>GitHub</a> &nbsp;\u00b7&nbsp; <a href='%6'>Instagram</a> "
+                    "&nbsp;\u00b7&nbsp; <a href='%7'>Star the project</a><br><br>"
                     "Transcription by whisper.cpp, audio capture by miniaudio, "
                     "interface built with Qt 6.")
-                .arg(ECO_ESCRITO_VERSION, ECO_ESCRITO_GIT_COMMIT, ECO_ESCRITO_BUILD_TYPE));
+                .arg(ECO_ESCRITO_VERSION, ECO_ESCRITO_GIT_COMMIT, ECO_ESCRITO_BUILD_TYPE, ECO_ESCRITO_AUTHOR,
+                     ECO_ESCRITO_AUTHOR_URL, ECO_ESCRITO_INSTAGRAM_URL, ECO_ESCRITO_HOMEPAGE_URL));
     }
 
     void show_privacy_notice() {

@@ -17,6 +17,12 @@ if(GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET)
 endif()
+# Who made it, and where to find them. Shown in the footer and About box as
+# links the user may choose to open in their own browser; the application
+# itself never contacts them.
+set(ECO_ESCRITO_AUTHOR "David TUMUSIME")
+set(ECO_ESCRITO_AUTHOR_URL "https://github.com/2musime")
+set(ECO_ESCRITO_INSTAGRAM_URL "https://www.instagram.com/2musime")
 configure_file(version.h.in "${CMAKE_BINARY_DIR}/generated/version.h" @ONLY)
 
 # Our Whisper and ggml builds are pinned to this project, so they live in a

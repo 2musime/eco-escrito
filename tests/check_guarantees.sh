@@ -52,7 +52,7 @@ echo "== No networking is introduced =="
 
 OURS="main.cpp gui_main.cpp miniaudio_impl.cpp partial_text.h ui_state.h diagnostics.h
       audio_ring_buffer.h file_storage.h model_info.h speech_detection.h wav_io.h
-      audio_player.h transcript_library.h"
+      audio_player.h transcript_library.h practice.h version.h.in"
 
 found="$(grep -nE '#include[[:space:]]*<(sys/socket|netinet/|arpa/|netdb|curl/|openssl/)' $OURS 2>/dev/null)"
 [ -z "$found" ] && pass "no networking headers are included" \
