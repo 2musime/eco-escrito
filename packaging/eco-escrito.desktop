@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
 Name=Eco-escrito
-GenericName=Speech to Text
-Comment=Transcribe speech to text entirely on this computer
+GenericName=Voice Typing and Pronunciation
+Comment=Speak clearly, and keep what you say. Works offline.
 Exec=eco_escrito
 Icon=eco-escrito
 Terminal=false
 Categories=AudioVideo;Recorder;
-Keywords=speech;transcription;dictation;whisper;offline;
+Keywords=speech;voice;typing;dictation;transcription;pronunciation;practice;english;offline;whisper;
 StartupNotify=true
