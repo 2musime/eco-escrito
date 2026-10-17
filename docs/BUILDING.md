@@ -29,11 +29,24 @@ The Whisper source and miniaudio header are kept in `third_party/`.
 
 ## Dependencies on Windows
 
-- Visual Studio 2022 with the **Desktop development with C++** workload, or the
-  standalone Build Tools. The compiler is MSVC; MinGW is not tested here.
-- CMake 3.16 or newer, and Git with submodule support.
-- Qt 6 for MSVC, from the official Qt installer. Note the path you install it
-  to; CMake needs it.
+- Visual Studio 2022 or newer with the **Desktop development with C++**
+  workload, or the standalone Build Tools. The compiler is MSVC; MinGW is not
+  tested here. Visual Studio brings its own CMake and Ninja.
+- Git with submodule support.
+- Qt 6 for MSVC (64-bit). The official installer works, or, without a Qt
+  account, [aqtinstall](https://github.com/miurahr/aqtinstall), whose
+  standalone `aqt.exe` needs no Python:
+
+  ```bat
+  aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir C:\Qt
+  ```
+
+  Note the path you install it to; CMake needs it.
+- NSIS, only to build the installer. The portable ZIP from the NSIS site is
+  enough; put its directory on `PATH`.
+
+Verified with Visual Studio 2026 Community (MSVC 14.51) and Qt 6.8.3 on
+Windows 11.
 
 ## Production build
 
@@ -77,6 +90,27 @@ unsupported duration values, buffer overflow, and truncated recordings produce
 clear errors instead of unbounded memory growth.
 
 ## Windows build
+
+### In Visual Studio
+
+Open the project folder with **File -> Open -> Folder**. `CMakePresets.json`
+offers **x64 Debug** and **x64 Release**, which build with Ninja into
+`out\build\<preset>\bin` and expect Qt at `C:/Qt/6.8.3/msvc2022_64`. If yours
+is elsewhere, create a `CMakeUserPresets.json` (ignored by git) that inherits
+`windows-base` and sets `CMAKE_PREFIX_PATH`. The presets put Qt's `bin` on
+`PATH`, so the interface starts from the debugger; choose **eco_escrito.exe**
+as the startup item. Use **x64 Release** to try transcription: a Debug Whisper
+is many times slower.
+
+The same presets work from a Developer Command Prompt:
+
+```bat
+cmake --preset x64-release
+cmake --build --preset x64-release
+ctest --preset x64-release
+```
+
+### From the command line
 
 Configure from a Developer Command Prompt, pointing CMake at Qt:
 
@@ -124,8 +158,11 @@ Leave the option off for ordinary development builds; nobody compiling a change
 should have to wait for a download.
 
 `cpack` produces the NSIS installer when `makensis` is on PATH, and the ZIP
-either way. The installer adds a Start Menu entry and carries the application
-icon; `scripts/install-model.ps1` is installed beside the executables.
+either way. The installer adds Start Menu and desktop shortcuts, carries the
+application icon, and quietly runs the Visual C++ runtime installer that
+`windeployqt` places beside the executables, so a machine without the runtime
+can still start the program. `scripts/install-model.ps1` is installed beside
+the executables.
 
 ### What is not there yet
 
@@ -133,9 +170,10 @@ icon; `scripts/install-model.ps1` is installed beside the executables.
   internet until the installer is code-signed.
 - **The command-line test suite does not run**, and neither do the sanitizers.
   See [TESTING.md](TESTING.md) and [QUALITY_GATES.md](QUALITY_GATES.md).
-- **Nothing here has been run on Windows.** It configures, installs and
-  packages from the same source as the Linux build, and that is all that is
-  known.
+- **Live microphone capture is unverified on Windows.** The build, the unit
+  and interface tests, transcription of a recorded file, the network-free
+  imports, and the installer have been checked on Windows 11; recording from a
+  real microphone has not.
 
 ## Checks before pushing
 

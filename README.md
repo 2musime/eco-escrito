@@ -268,8 +268,10 @@ tests/run_gates.sh --quick  # skip the sanitizer build
 - x86-64 and CPU only, with no GPU backend.
 - Packaged for Fedora (`.rpm`) and Windows (installer and ZIP). There is no
   `.deb` or Flatpak package.
-- The Windows build is produced from the same source but has not yet been run
-  on a Windows machine. The sanitizers and the CLI test suite do not run there.
+- On Windows, building, the unit and interface tests, transcription and the
+  installer have been verified on Windows 11 (MSVC, Qt 6.8). Live microphone
+  capture has not yet been tried there, and the sanitizers and the CLI test
+  suite do not run there.
 - Only the English models (`base.en`, `small.en`) are tested. Multilingual
   models load, but they are untested.
 - Practice compares words, not sounds, so a mispronounced word that Whisper
