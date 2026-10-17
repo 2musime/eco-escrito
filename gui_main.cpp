@@ -140,13 +140,7 @@ QLabel#welcomeTitle { font-size: 32px; font-weight: 600; color: #1d1d1f; }
 QPushButton#welcomePrimary { background: #0066cc; color: #ffffff; border: none; border-radius: 10px;
                              font-weight: 600; padding: 0 22px; }
 QPushButton#welcomePrimary:hover { background: #0055b3; }
-QPushButton#welcomeSecondary { border-radius: 12px; padding: 0; }
-QPushButton#welcomePrimary QLabel, QPushButton#welcomeSecondary QLabel { background: transparent; }
-QLabel#doorTitle { font-size: 15px; font-weight: 600; }
-QLabel#doorLine { font-size: 13px; }
-QPushButton#welcomePrimary QLabel#doorTitle, QPushButton#welcomePrimary QLabel#doorLine { color: #ffffff; }
-QPushButton#welcomeSecondary QLabel#doorTitle { color: #1d1d1f; }
-QPushButton#welcomeSecondary QLabel#doorLine { color: #6e6e73; }
+QPushButton#welcomeSecondary { border-radius: 10px; padding: 0 22px; }
 QStatusBar::item { border: none; }
 QPushButton#starLink { border: 1px solid #e5e5ea; border-radius: 10px; background: transparent; color: #424245;
                        padding: 1px 10px; margin: 0 6px; }
@@ -1807,7 +1801,6 @@ private:
         layout->addWidget(title);
         layout->addSpacing(28);
 
-        // Each door says what it is, then what it does for you.
         QPushButton* record = welcome_door("Write by Voice", "Speak, and see it written", "welcomePrimary", page);
         record->setDefault(true);
         QPushButton* practise = welcome_door("Practise", "Hear which words need work", "welcomeSecondary", page);
@@ -1831,27 +1824,15 @@ private:
         return page;
     }
 
-    // A large button with a name and one line on what it does. The labels never
-    // take the mouse, so hover, press and focus all belong to the button.
+    // A button that says only what it is. What it does for you is one hover
+    // away, and read aloud by a screen reader, so the page stays quiet.
     QPushButton* welcome_door(const QString& name, const QString& line, const char* style, QWidget* parent) {
-        auto* door = new QPushButton(parent);
+        auto* door = new QPushButton(name, parent);
         door->setObjectName(style);
         door->setCursor(Qt::PointingHandCursor);
-        door->setMinimumSize(232, 64);
-        door->setAccessibleName(name);
+        door->setMinimumHeight(40);
+        door->setToolTip(line);
         door->setAccessibleDescription(line);
-        auto* layout = new QVBoxLayout(door);
-        layout->setContentsMargins(22, 10, 22, 10);
-        layout->setSpacing(1);
-        auto* title = new QLabel(name, door);
-        title->setObjectName("doorTitle");
-        auto* body = new QLabel(line, door);
-        body->setObjectName("doorLine");
-        for (QLabel* label : {title, body}) {
-            label->setAlignment(Qt::AlignCenter);
-            label->setAttribute(Qt::WA_TransparentForMouseEvents);
-            layout->addWidget(label);
-        }
         return door;
     }
 

@@ -67,9 +67,10 @@ It is deliberately almost empty, on white:
 
 - the application icon
 - one line: *Speak clearly, and keep what you say.*
-- two buttons, each with its name and one line on what it does for you:
-  **Write by Voice** (*Speak, and see it written*), the primary action, and
-  **Practise** (*Hear which words need work*)
+- two buttons: **Write by Voice**, the primary action, and **Practise**. Each
+  says only its name. What it does for you (*Speak, and see it written*, *Hear
+  which words need work*) is in its tooltip and read out by screen readers, so
+  the page stays quiet
 - one honest footnote: *Works without the internet. English only, for now.*
   Practice and dictation use English models, and saying so up front is kinder
   than letting someone find out by trying.
