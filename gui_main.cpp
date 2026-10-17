@@ -135,9 +135,6 @@ QPushButton#welcomePrimary { background: #007aff; color: #ffffff; border: none; 
 QPushButton#welcomePrimary:hover { background: #0062cc; }
 QPushButton#welcomeSecondary { border-radius: 10px; padding: 0 22px; }
 QStatusBar::item { border: none; }
-QPushButton#footerLink { border: none; background: transparent; color: #6e6e73; text-decoration: underline;
-                         padding: 0 6px; }
-QPushButton#footerLink:hover { color: #1d1d1f; }
 QPushButton#starLink { border: 1px solid #e5e5ea; border-radius: 10px; background: transparent; color: #424245;
                        padding: 1px 10px; margin: 0 6px; }
 QPushButton#starLink:hover { border-color: #ffcc00; background: #fffbea; color: #1d1d1f; }
@@ -470,30 +467,15 @@ public:
         context_label_ = new QLabel(this);
         context_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
         statusBar()->addWidget(context_label_, 1);
-        // Who made it, said once and quietly, with the one thing a visitor might
-        // want to do about it. Both open in the user's browser, and only when
-        // clicked; the application never fetches anything from either.
-        auto* author_link = new QPushButton(QString("Made by %1").arg(ECO_ESCRITO_AUTHOR), this);
-        author_link->setObjectName("footerLink");
-        author_link->setCursor(Qt::PointingHandCursor);
-        author_link->setToolTip(QString("@%1 on GitHub").arg(ECO_ESCRITO_AUTHOR_HANDLE));
-        connect(author_link, &QPushButton::clicked, this, [] { open_link(ECO_ESCRITO_AUTHOR_URL); });
-        statusBar()->addPermanentWidget(author_link);
-        auto* star_link = new QPushButton("\u2606 Star on GitHub", this);
+        // The one thing a visitor might want to do for the project. It opens in
+        // the user's browser, and only when clicked; the application never
+        // fetches anything. Who made it, the version and privacy are in Help.
+        auto* star_link = new QPushButton("\u2606 Star us on GitHub", this);
         star_link->setObjectName("starLink");
         star_link->setCursor(Qt::PointingHandCursor);
         star_link->setToolTip("Like Eco-escrito? A star helps others find it.");
         connect(star_link, &QPushButton::clicked, this, [] { open_link(ECO_ESCRITO_HOMEPAGE_URL); });
         statusBar()->addPermanentWidget(star_link);
-
-        auto* privacy_link = new QPushButton("Privacy", this);
-        privacy_link->setObjectName("footerLink");
-        privacy_link->setCursor(Qt::PointingHandCursor);
-        connect(privacy_link, &QPushButton::clicked, this, [this] { show_privacy_notice(); });
-        statusBar()->addPermanentWidget(privacy_link);
-        auto* version = new QLabel(QString("Eco-escrito %1").arg(ECO_ESCRITO_VERSION), this);
-        version->setObjectName("footnote");
-        statusBar()->addPermanentWidget(version);
         update_context_bar();
 
         process_ = new QProcess(this);

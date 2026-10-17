@@ -21,7 +21,6 @@ endif()
 # links the user may choose to open in their own browser; the application
 # itself never contacts them.
 set(ECO_ESCRITO_AUTHOR "David TUMUSIME")
-set(ECO_ESCRITO_AUTHOR_HANDLE "2musime")
 set(ECO_ESCRITO_AUTHOR_URL "https://github.com/2musime")
 set(ECO_ESCRITO_INSTAGRAM_URL "https://www.instagram.com/2musime")
 configure_file(version.h.in "${CMAKE_BINARY_DIR}/generated/version.h" @ONLY)

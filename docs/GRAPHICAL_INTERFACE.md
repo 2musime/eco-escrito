@@ -89,11 +89,11 @@ put pale text on white.
   **Offline** badge, and Help. The window will not narrow past the width the
   bar needs, so no label is ever cut short. The badge keeps the privacy
   promise visible on every screen without repeating it.
-- **Footer:** what the screen is doing on the left. On the right: **Made by
-  David TUMUSIME** (the author's GitHub), a small outlined **Star on GitHub** that warms
-  to yellow on hover, **Privacy**, and the version. **About** repeats the
-  credit with GitHub and Instagram links. Links open in the browser only when
-  clicked; see [PRIVACY.md](PRIVACY.md). The title bar carries the name alone.
+- **Footer:** what the screen is doing on the left, and one small outlined
+  **Star us on GitHub** on the right that warms to yellow on hover. The
+  version, who made it, and the GitHub and Instagram links are in
+  **Help > About**. Links open in the browser only when clicked; see
+  [PRIVACY.md](PRIVACY.md). The title bar carries the name alone.
 - **Dropdowns:** rounded, with a drawn chevron shipped in normal and `@2x`
   sizes, so they stay crisp on high-density screens. The chevron is a PNG
   because an SVG would need the Qt SVG plugin, which the package does not
