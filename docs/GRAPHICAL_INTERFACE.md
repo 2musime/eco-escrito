@@ -6,12 +6,13 @@ never loads Whisper itself, so the event loop stays free.
 
 ## Screens
 
-Four, one job each, chosen from the bar across the top. The screen you are on is
-highlighted in the bar.
+A landing page and four screens, one job each, chosen from the bar across the
+top. The screen you are on is highlighted in the bar.
 
 | Screen | Holds | Reached by |
 |---|---|---|
-| **Practice** | a sentence to read, one button, the result word by word | opens here; `Practice`, or `Ctrl+1` |
+| **Home** | a tile for each feature, recent transcripts | opens here; `Home`, the name in the bar, or `Ctrl+0` |
+| **Practice** | a sentence to read, one button, the result word by word | `Practice`, `Ctrl+1`, or its tile |
 | **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, or **Record freely instead** |
 | **Transcripts** | the saved list and a reader | `Transcripts`, or `Ctrl+H` |
 | **Speeches** | recordings, and a player for them | `Speeches`, or `Ctrl+P` |
@@ -20,9 +21,37 @@ The bar is navigation and nothing else. Pressing **Recording** goes to the
 recording screen; it does not start a recording. Starting is done there, with
 the model, microphone and limit already in view.
 
-Practice is the landing screen and explains itself: a three-step **How it
-works** strip sits under the result, so a first-time user never needs Help to
-understand what the application does. See [PRACTICE.md](PRACTICE.md).
+## Home
+
+Home is the landing page, laid out the way a Mac welcome window is: one centred
+column, so the eye moves from the icon to the promise to the choices.
+
+- **Hero:** the application icon on a white tile, a greeting for the time of
+  day, the title *Your voice, in writing.*, and one sentence on what the
+  application does. The sentence is capped at about sixty characters a line.
+- **Get started:** a tile per feature, each a single button with a drawn icon
+  (a white glyph on a gradient square, in the manner of the macOS system
+  icons), its name, what it does, and one line of live detail such as
+  *4 transcripts saved*. Two columns when there is room for the descriptions,
+  one below that.
+- **Recent transcripts:** the four newest, each opening the transcripts screen
+  with that one already selected, plus **See All**. With none, it says what
+  will appear and offers **Start a Recording**.
+- **Footnote:** the offline promise, said once and quietly.
+
+Home is re-read from disk each time it is shown, so its counts and list are
+never stale.
+
+### Adding a feature
+
+Each tile comes from one entry in the `features` table in `build_home_page`:
+name, description, detail line, glyph, two gradient colours, shortcut, and what
+opening it does. A new feature adds an entry, and a glyph to `FeatureGlyph` if
+none fits, and gets a tile in the same grid and voice as the others.
+
+Practice explains itself: a three-step **How it works** strip sits under the
+result, so a first-time user never needs Help to understand it. See
+[PRACTICE.md](PRACTICE.md).
 
 Navigation closes while a recording or transcription is running. The controls
 for something still running must not be hidden behind another screen.
@@ -51,8 +80,13 @@ style sheet serve both. The palette is fixed rather than taken from the
 desktop: the colours assume a light background, and a dark system palette would
 put pale text on white cards.
 
-- **Header:** the name, the four screens, an **Offline** badge, and Help. The
-  badge replaces the old "Processed on this computer" footer note, so the
+- **Colours:** the macOS system palette, so the application reads as a calm
+  Mac utility on any desktop: `#f5f5f7` window, `#1d1d1f` text, `#6e6e73`
+  secondary text, `#007aff` accent, `#e5e5ea` hairlines. Feature icons use
+  the system indigo, red, blue and orange.
+- **Header:** the name (which also goes home), Home and the four screens, an
+  **Offline** badge, and Help. The window will not narrow past the width the
+  bar needs, so no label is ever cut short. The badge replaces the old "Processed on this computer" footer note, so the
   privacy promise is visible on every screen without being repeated.
 - **Cards:** the practice sentence, its result, the steps, and the record panel
   each sit on a white card, so related controls read as one thing.
@@ -198,6 +232,7 @@ found rather than memorised.
 | `Esc` | Cancel whatever the worker is doing |
 | `Ctrl+S` | Save the transcript to a file |
 | `Ctrl+Shift+C` | Copy the whole transcript |
+| `Ctrl+0` | Go to Home |
 | `Ctrl+1` | Go to Practice |
 | `Ctrl+2` | Go to Recording |
 | `Ctrl+H` | Go to saved transcripts |

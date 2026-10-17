@@ -87,7 +87,8 @@ Other models, upgrading and uninstalling are covered in [INSTALL.md](INSTALL.md)
 
 Launch the app with `eco_escrito`, or from your desktop's application menu.
 
-The app has four screens:
+The app opens on **Home**, which has a tile for each feature and your most
+recent transcripts. From there:
 
 | Screen | What it does |
 |---|---|
