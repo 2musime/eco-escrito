@@ -183,8 +183,10 @@ if(MSVC)
     # replacements Microsoft suggests are not portable, and both calls are
     # already used safely, so the warning is turned off rather than the code
     # being contorted around it.
-    target_compile_definitions(eco_escrito_cli PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_definitions(eco_escrito PRIVATE _CRT_SECURE_NO_WARNINGS)
+    # miniaudio includes <windows.h>, whose min and max macros would break
+    # std::min and std::max; NOMINMAX stops it defining them.
+    target_compile_definitions(eco_escrito_cli PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
+    target_compile_definitions(eco_escrito PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 endif()
 
 if(ECO_ESCRITO_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -224,8 +226,8 @@ if(ECO_ESCRITO_WARNING_FLAGS)
 endif()
 
 if(MSVC)
-    target_compile_definitions(eco_escrito_unit_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_definitions(eco_escrito_gui_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(eco_escrito_unit_tests PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
+    target_compile_definitions(eco_escrito_gui_tests PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 endif()
 
 if(ECO_ESCRITO_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
