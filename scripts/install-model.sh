@@ -9,8 +9,8 @@ usage() {
 Usage: install-model.sh [MODEL] [--system|--user|--dir PATH]
 
   MODEL     base.en (default), small.en, tiny.en, medium.en, large-v3
-  --user    install to \$XDG_DATA_HOME/audio-to-text/models  (default)
-  --system  install to /usr/share/audio-to-text/models       (needs root)
+  --user    install to \$XDG_DATA_HOME/eco-escrito/models  (default)
+  --system  install to /usr/share/eco-escrito/models       (needs root)
   --dir P   install to P
 
 Models come from the whisper.cpp project's own distribution at
@@ -26,14 +26,14 @@ DEST=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --help|-h) usage; exit 0 ;;
-        --user)    DEST="${XDG_DATA_HOME:-$HOME/.local/share}/audio-to-text/models"; shift ;;
-        --system)  DEST="/usr/share/audio-to-text/models"; shift ;;
+        --user)    DEST="${XDG_DATA_HOME:-$HOME/.local/share}/eco-escrito/models"; shift ;;
+        --system)  DEST="/usr/share/eco-escrito/models"; shift ;;
         --dir)     DEST="${2:-}"; shift 2 ;;
         -*)        echo "Unknown option: $1" >&2; usage; exit 1 ;;
         *)         MODEL="$1"; shift ;;
     esac
 done
-[ -n "$DEST" ] || DEST="${XDG_DATA_HOME:-$HOME/.local/share}/audio-to-text/models"
+[ -n "$DEST" ] || DEST="${XDG_DATA_HOME:-$HOME/.local/share}/eco-escrito/models"
 
 case "$MODEL" in
     tiny.en|base.en|small.en|medium.en|large-v3) ;;
@@ -79,4 +79,4 @@ echo "Size:      $(du -h "$FILE" | cut -f1)"
 echo "SHA-256:   $(sha256sum "$FILE" | cut -d' ' -f1)"
 echo ""
 echo "Verify it loads:"
-echo "  audio_to_text_cli \"$FILE\" --model-dir \"$DEST\" --version"
+echo "  eco_escrito_cli \"$FILE\" --model-dir \"$DEST\" --version"

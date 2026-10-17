@@ -1024,11 +1024,11 @@ bool parse_options(
         } else if (argument == "--delete-recordings") {
             delete_recordings = true;
         } else if (argument == "--version" || argument == "-v") {
-            std::cout << "audio_to_text " << AUDIO_TO_TEXT_VERSION
-                      << " (" << AUDIO_TO_TEXT_GIT_COMMIT << ", "
-                      << AUDIO_TO_TEXT_BUILD_TYPE << ")" << std::endl;
-            std::cout << "VERSION|" << AUDIO_TO_TEXT_VERSION
-                      << '|' << AUDIO_TO_TEXT_GIT_COMMIT << std::endl;
+            std::cout << "eco_escrito " << ECO_ESCRITO_VERSION
+                      << " (" << ECO_ESCRITO_GIT_COMMIT << ", "
+                      << ECO_ESCRITO_BUILD_TYPE << ")" << std::endl;
+            std::cout << "VERSION|" << ECO_ESCRITO_VERSION
+                      << '|' << ECO_ESCRITO_GIT_COMMIT << std::endl;
             return false;
         } else if (argument == "--privacy") {
             show_privacy = true;
@@ -1067,17 +1067,17 @@ bool parse_options(
             }
         } else if (argument == "--help" || argument == "-h") {
             std::cout << "Usage:\n"
-                      << "  ./build-release/audio_to_text_cli MODEL_PATH [--threads N]\n"
+                      << "  ./build-release/eco_escrito_cli MODEL_PATH [--threads N]\n"
                       << "      [--duration 15|45|60|300|600] [--stream] [--model-dir DIR]\n"
                       << "      [--device INDEX]\n"
                       << "      [--no-retain-audio] [--no-retain-transcript] [--practice]\n"
-                      << "  ./build-release/audio_to_text_cli --list-devices\n"
-                      << "  ./build-release/audio_to_text_cli --privacy\n"
-                      << "  ./build-release/audio_to_text_cli --version\n"
-                      << "  ./build-release/audio_to_text_cli --delete-recordings\n"
-                      << "  ./build-release/audio_to_text_cli --benchmark --input SPEECH.wav\n"
+                      << "  ./build-release/eco_escrito_cli --list-devices\n"
+                      << "  ./build-release/eco_escrito_cli --privacy\n"
+                      << "  ./build-release/eco_escrito_cli --version\n"
+                      << "  ./build-release/eco_escrito_cli --delete-recordings\n"
+                      << "  ./build-release/eco_escrito_cli --benchmark --input SPEECH.wav\n"
                       << "      MODEL_PATH ... [--threads N] [--practice]\n"
-                      << "  ./build-release/audio_to_text_cli --compare MODEL_PATH MODEL_PATH ...\n"
+                      << "  ./build-release/eco_escrito_cli --compare MODEL_PATH MODEL_PATH ...\n"
                       << "      [--threads N] [--model-dir DIR]\n"
                       << "\nModels must sit inside ./models, the application data directory,\n"
                       << "or a directory approved with --model-dir.\n"

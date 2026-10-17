@@ -12,12 +12,12 @@
 # reported as skipped, never as passed. A gate that quietly does nothing is
 # worse than a gate that is absent, because it looks like coverage.
 
-# AUDIO_TO_TEXT_PLATFORM pins the answer instead of detecting it. It exists so
+# ECO_ESCRITO_PLATFORM pins the answer instead of detecting it. It exists so
 # one platform's branches can be exercised from another, which is the only way
 # to know the Windows paths in these scripts were ever executed. Nothing in
 # normal use sets it.
-if [ -n "${AUDIO_TO_TEXT_PLATFORM:-}" ]; then
-    PLATFORM="$AUDIO_TO_TEXT_PLATFORM"
+if [ -n "${ECO_ESCRITO_PLATFORM:-}" ]; then
+    PLATFORM="$ECO_ESCRITO_PLATFORM"
 else
     case "$(uname -s 2>/dev/null)" in
         Linux)                PLATFORM=linux ;;
@@ -59,9 +59,9 @@ fi
 # the Whisper DLLs, and a multi-configuration generator adds a further level.
 # Probing beats predicting: it is correct for Visual Studio and for Ninja.
 binary_dir() { # build-directory
-    if [ -f "$1/bin/Release/audio_to_text_cli$EXE" ]; then
+    if [ -f "$1/bin/Release/eco_escrito_cli$EXE" ]; then
         echo "$1/bin/Release"
-    elif [ -f "$1/bin/audio_to_text_cli$EXE" ]; then
+    elif [ -f "$1/bin/eco_escrito_cli$EXE" ]; then
         echo "$1/bin"
     else
         echo "$1"

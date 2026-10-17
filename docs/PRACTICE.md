@@ -68,7 +68,7 @@ the text but do not lower a word's probability.
 To see it without the interface:
 
 ```bash
-./build-release/audio_to_text_cli --benchmark --input speech.wav --threads 8 \
+./build-release/eco_escrito_cli --benchmark --input speech.wav --threads 8 \
     --practice models/ggml-small.en.bin | grep WORDS
 ```
 

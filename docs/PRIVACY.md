@@ -7,7 +7,7 @@ uploaded.
 Read the notice from either interface:
 
 ```bash
-./build-release/audio_to_text_cli --privacy
+./build-release/eco_escrito_cli --privacy
 ```
 
 In the GUI, the **Privacy** button shows the same information together with the
@@ -22,7 +22,7 @@ This is checked, not asserted.
 the worker links no TLS, DNS or HTTP library:
 
 ```bash
-nm -D --undefined-only build-release/audio_to_text_cli | awk '{print $2}' \
+nm -D --undefined-only build-release/eco_escrito_cli | awk '{print $2}' \
   | grep -vE '^_Z' | grep -xE "socket|connect|bind|send|recv|getaddrinfo"
 ```
 
@@ -35,7 +35,7 @@ machinery and have nothing to do with sockets. Excluding mangled C++ names
 network namespace whose only interface is a downed loopback:
 
 ```bash
-unshare -rn -- ./build-release/audio_to_text_cli \
+unshare -rn -- ./build-release/eco_escrito_cli \
   --benchmark --input speech.wav models/ggml-base.en.bin
 ```
 

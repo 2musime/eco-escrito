@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=Audio to Text
+Name=Eco-escrito
 GenericName=Speech to Text
 Comment=Transcribe speech to text entirely on this computer
-Exec=audio_to_text
-Icon=audio-to-text
+Exec=eco_escrito
+Icon=eco-escrito
 Terminal=false
 Categories=AudioVideo;Recorder;
 Keywords=speech;transcription;dictation;whisper;offline;

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Regenerates every icon size from packaging/audio-to-text.png.
+# Regenerates every icon size from packaging/eco-escrito.png.
 #
 # The generated files are committed, because a build machine is not required to
 # have ImageMagick. Run this only when the artwork itself changes.
@@ -9,8 +9,8 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-SOURCE="packaging/audio-to-text.png"
-MASTER="packaging/icons/audio-to-text-512.png"
+SOURCE="packaging/eco-escrito.png"
+MASTER="packaging/icons/eco-escrito-512.png"
 SIZES="16 22 24 32 48 64 128 256"
 
 command -v magick > /dev/null 2>&1 || {
@@ -36,16 +36,16 @@ for size in $SIZES; do
     # Lanczos keeps the thin strokes legible down to 16 pixels; the default
     # filter turns them to mush.
     magick "$MASTER" -filter Lanczos -resize "${size}x${size}" \
-        -strip "$directory/audio-to-text.png"
+        -strip "$directory/eco-escrito.png"
 done
 
 # One file holding every size, which is what Windows expects of an icon.
 magick "$MASTER" -define icon:auto-resize=256,128,64,48,32,24,16 \
-    packaging/audio-to-text.ico
+    packaging/eco-escrito.ico
 
 echo "Generated:"
 echo "  $MASTER"
 for size in $SIZES; do
-    echo "  packaging/icons/hicolor/${size}x${size}/apps/audio-to-text.png"
+    echo "  packaging/icons/hicolor/${size}x${size}/apps/eco-escrito.png"
 done
-echo "  packaging/audio-to-text.ico"
+echo "  packaging/eco-escrito.ico"

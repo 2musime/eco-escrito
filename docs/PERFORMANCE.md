@@ -17,7 +17,7 @@ The figures below come from one machine. Your own numbers are one command away,
 and that is the honest way to know what to expect:
 
 ```bash
-audio_to_text_cli --benchmark --input your-recording.wav models/ggml-base.en.bin
+eco_escrito_cli --benchmark --input your-recording.wav models/ggml-base.en.bin
 ```
 
 An RTF (real-time factor) below 1.0 means the machine transcribes faster than
@@ -31,7 +31,7 @@ transcription stops keeping up.
 fixed WAV file, so runs are comparable to each other:
 
 ```bash
-./build-release/audio_to_text_cli --benchmark --input recording.wav \
+./build-release/eco_escrito_cli --benchmark --input recording.wav \
   models/ggml-base.en.bin models/ggml-small.en.bin
 ```
 
@@ -102,7 +102,7 @@ so the worker's default is the single source of truth.
 Override when a particular run needs it:
 
 ```bash
-./build-release/audio_to_text_cli models/ggml-small.en.bin --threads 11
+./build-release/eco_escrito_cli models/ggml-small.en.bin --threads 11
 ```
 
 ## Allocation behaviour

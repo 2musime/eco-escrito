@@ -83,9 +83,9 @@ bash third_party/whisper.cpp/models/download-ggml-model.sh small.en models
 Either by path, or by bare file name:
 
 ```bash
-audio_to_text_cli ggml-base.en.bin              # searched for in the roots
-audio_to_text_cli models/ggml-base.en.bin       # resolved as a path
-audio_to_text_cli /opt/m.bin --model-dir /opt   # approved explicitly
+eco_escrito_cli ggml-base.en.bin              # searched for in the roots
+eco_escrito_cli models/ggml-base.en.bin       # resolved as a path
+eco_escrito_cli /opt/m.bin --model-dir /opt   # approved explicitly
 ```
 
 The interface uses the first form. See
@@ -113,7 +113,7 @@ These are an observation, not a published reference. Verify against a fresh
 download over HTTPS from the source above if provenance matters to you.
 
 The `base.en` hash is also pinned in `CMakeLists.txt` as
-`AUDIO_TO_TEXT_BUNDLED_MODEL_SHA256`, and the Windows package build downloads
+`ECO_ESCRITO_BUNDLED_MODEL_SHA256`, and the Windows package build downloads
 the model and checks it against that value. The weakness of an unpublished
 checksum is its strength here: if the file behind that URL ever changes, the
 package build stops rather than quietly shipping different weights. Should the
@@ -125,9 +125,9 @@ together.
 ```bash
 # Bad magic number
 head -c 2000000 /dev/urandom > /tmp/ggml-garbage.bin
-./build-release/audio_to_text_cli /tmp/ggml-garbage.bin --model-dir /tmp
+./build-release/eco_escrito_cli /tmp/ggml-garbage.bin --model-dir /tmp
 
 # Truncated model
 head -c 500 models/ggml-base.en.bin > /tmp/ggml-truncated.bin
-./build-release/audio_to_text_cli /tmp/ggml-truncated.bin --model-dir /tmp
+./build-release/eco_escrito_cli /tmp/ggml-truncated.bin --model-dir /tmp
 ```

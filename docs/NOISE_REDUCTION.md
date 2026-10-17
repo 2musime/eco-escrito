@@ -30,7 +30,7 @@ the difference.
 Test with:
 
 ```bash
-./build/audio_to_text models/ggml-small.en.bin --threads 4
+./build/eco_escrito models/ggml-small.en.bin --threads 4
 ```
 
 Keep the original and cleaned audio, and compare both outputs against the words intentionally spoken. If cleaned output loses consonants or words, reduce the attenuation threshold or disable preprocessing for that recording.
