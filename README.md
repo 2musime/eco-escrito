@@ -87,8 +87,9 @@ Other models, upgrading and uninstalling are covered in [INSTALL.md](INSTALL.md)
 
 Launch the app with `eco_escrito`, or from your desktop's application menu.
 
-The app opens on **Home**, which has a tile for each feature and your most
-recent transcripts. From there:
+The app opens on a welcome page with two buttons, **New Recording** and
+**Practise Pronunciation**. Untick **Show this page when Eco-escrito opens** to
+go straight to Practice. Click the name in the top bar to come back.
 
 | Screen | What it does |
 |---|---|

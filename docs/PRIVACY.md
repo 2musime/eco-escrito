@@ -55,6 +55,7 @@ Windows through the per-user ACL that `%LOCALAPPDATA%` already carries. See
 ```text
 <data>/recordings/     WAV audio
 <data>/transcripts/    transcription text
+<data>/settings.ini    one interface preference, no content
 ```
 
 The path is printed at startup, shown in the GUI's **Saving to** line, and

@@ -32,6 +32,7 @@ Layout:
 <data>/recordings/     WAV artefacts
 <data>/transcripts/    transcription text
 <data>/models/         optional approved model location
+<data>/settings.ini    whether the welcome page opens first
 ```
 
 On Linux, directories are created with mode `0700` and files with mode `0600`,
