@@ -386,6 +386,14 @@ if(WIN32)
     # Start Menu shortcut: the executable without its extension, then the label.
     # CPack looks for it under bin/, which is where it is installed.
     set(CPACK_PACKAGE_EXECUTABLES "eco_escrito" "Eco-escrito")
+    # windeployqt ships the Visual C++ runtime installer beside the program but
+    # does not run it, and a machine without the runtime cannot start the
+    # application. It is run quietly; it does nothing where already present.
+    # The desktop shortcut is made here because CPACK_CREATE_DESKTOP_LINKS
+    # depends on an options page that only appears with CPACK_NSIS_MODIFY_PATH.
+    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
+        "IfFileExists '$INSTDIR\\\\bin\\\\vc_redist.x64.exe' 0 +2\n  ExecWait '\\\"$INSTDIR\\\\bin\\\\vc_redist.x64.exe\\\" /install /quiet /norestart'\n  CreateShortCut '$DESKTOP\\\\Eco-escrito.lnk' '$INSTDIR\\\\bin\\\\eco_escrito.exe'")
+    set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "Delete '$DESKTOP\\\\Eco-escrito.lnk'")
     set(CPACK_NSIS_PACKAGE_NAME "Eco-escrito")
     set(CPACK_NSIS_DISPLAY_NAME "Eco-escrito ${PROJECT_VERSION}")
     set(CPACK_NSIS_URL_INFO_ABOUT "${PROJECT_HOMEPAGE_URL}")
