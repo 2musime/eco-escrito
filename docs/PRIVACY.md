@@ -78,7 +78,7 @@ timings, never audio or transcribed words.
 | Control | CLI | GUI |
 |---|---|---|
 | Show the privacy notice | `--privacy` | **Privacy** button |
-| Transcribe without keeping audio | `--no-retain-audio` | **Keep audio files** checkbox |
+| Transcribe without keeping audio | `--no-retain-audio` | **Keep audio** checkbox |
 | Transcribe without saving text | `--no-retain-transcript` | not exposed |
 | Delete everything stored | `--delete-recordings` | **Delete recordings** button |
 

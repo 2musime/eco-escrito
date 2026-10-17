@@ -114,7 +114,9 @@ endif()
 qt_add_resources(eco_escrito "eco_escrito_icon"
     PREFIX "/icons"
     BASE packaging/icons
-    FILES packaging/icons/eco-escrito-512.png)
+    FILES packaging/icons/eco-escrito-512.png
+          packaging/icons/chevron-down.png
+          packaging/icons/chevron-down@2x.png)
 
 target_include_directories(eco_escrito PRIVATE
     .
