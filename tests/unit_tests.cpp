@@ -665,7 +665,9 @@ fs::path write_transcript(const fs::path& directory, const std::string& stamp,
     std::error_code error;
     fs::create_directories(directory, error);
     const fs::path path = directory / (stamp + "-transcription.txt");
-    std::ofstream(path) << body;
+    // Binary, as the application writes them: text mode would turn each \n into
+    // \r\n on Windows and the read-back would not match.
+    std::ofstream(path, std::ios::binary) << body;
     return path;
 }
 
@@ -822,7 +824,10 @@ void test_reading_and_deleting() {
     }
 
     // A file that cannot be read still lists, with an empty preview.
+    // Windows maps these permissions onto the read-only attribute alone, so the
+    // file stays readable there and the case cannot be set up.
     const fs::path unreadable = write_transcript(transcripts, "20260912-160000-dddd", "secret\n");
+#if !defined(_WIN32)
     fs::permissions(unreadable, fs::perms::none, error);
     if (!error) {
         const std::vector<TranscriptEntry> entries = list_transcripts(root);
@@ -836,6 +841,7 @@ void test_reading_and_deleting() {
         CHECK("an unreadable file is still listed", found);
         fs::permissions(unreadable, fs::perms::owner_read | fs::perms::owner_write, error);
     }
+#endif
 
     CHECK_FALSE("deleting outside the directory is refused",
                 delete_transcript(outside, root, reason));

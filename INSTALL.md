@@ -40,9 +40,10 @@ The GUI also appears in the desktop menu under Sound &amp; Video.
 
 Run `eco-escrito-<version>-win64.exe` and accept the default location. The
 installer places the program, the Whisper libraries, the Qt libraries **and the
-`base.en` speech model** in one directory, and adds **Eco-escrito** to the
-Start Menu. There is nothing else to download and nothing to configure: open it
-from the Start Menu and record.
+`base.en` speech model** in one directory, installs the Microsoft Visual C++
+runtime if the machine lacks it, and adds **Eco-escrito** to the Start Menu and
+the desktop. There is nothing else to download and nothing to configure: open
+it and record.
 
 That is the only difference from the Fedora package, where the model is fetched
 separately. Windows has no distribution to provide one, and a first run that
@@ -98,9 +99,9 @@ x86-64 Linux or Windows, about 1 GB free memory for `base.en`, a microphone, and
 no network connection at all after the model is in place. Full detail in
 [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
-Windows support is built and packaged from the same source as the Linux build,
-but has not yet been run on a Windows machine. Treat this release as untested
-there and report what breaks.
+Windows support is built and packaged from the same source as the Linux build.
+The build, tests, transcription and installer have been verified on Windows 11;
+live microphone capture has not yet been tried there, so report what breaks.
 
 ## Where your files go
 

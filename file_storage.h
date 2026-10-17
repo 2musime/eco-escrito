@@ -24,6 +24,10 @@
 #include <io.h>
 #include <process.h>
 #include <sys/stat.h>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
 #else
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -81,11 +85,21 @@ inline fs::path application_data_directory() {
 // the platform cannot answer, so callers must check before using it.
 inline fs::path executable_directory() {
 #if defined(_WIN32)
-    // The C runtime's own record of the path the process started from. Wide,
-    // so a path the active code page cannot express survives intact.
-    wchar_t* program = nullptr;
-    if (::_get_wpgmptr(&program) == 0 && program != nullptr && program[0] != L'\0') {
-        return fs::path(program).parent_path();
+    // The loader's record of this module's path. Wide, so a path the active
+    // code page cannot express survives intact. _get_wpgmptr is no substitute:
+    // it is only filled in for programs entered through wmain, and asking it
+    // otherwise ends the process. The buffer grows until the path fits.
+    std::wstring program(MAX_PATH, L'\0');
+    for (;;) {
+        const DWORD length = ::GetModuleFileNameW(nullptr, program.data(), static_cast<DWORD>(program.size()));
+        if (length == 0) {
+            break;
+        }
+        if (length < program.size()) {
+            program.resize(length);
+            return fs::path(program).parent_path();
+        }
+        program.resize(program.size() * 2);
     }
 #elif defined(__linux__)
     std::error_code error;
@@ -354,6 +368,17 @@ inline bool output_path_is_safe(const fs::path& path, const fs::path& root) {
 }
 
 // Announces a produced artefact by kind and path.
+// A path as UTF-8, the encoding the interface reads the worker's lines in. On
+// Windows string() would give the active code page instead, and a user name
+// outside it would reach the interface garbled.
+inline std::string protocol_path(const fs::path& path) {
+#if defined(_WIN32)
+    return path.u8string();
+#else
+    return path.string();
+#endif
+}
+
 inline void report_saved(const char* kind, const fs::path& path) {
-    std::cout << "SAVED|" << kind << '|' << path.string() << std::endl;
+    std::cout << "SAVED|" << kind << '|' << protocol_path(path) << std::endl;
 }

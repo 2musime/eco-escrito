@@ -167,6 +167,9 @@ inline bool inspect_model(const fs::path& path, ModelMetadata& metadata, std::st
 // The file is only ever opened for reading. These checks flag a model whose
 // name or permissions disagree with what the header actually says.
 inline void report_model_observations(const ModelMetadata& metadata) {
+#if !defined(_WIN32)
+    // Windows has no execute bit: every file reports all of them set, so the
+    // check would only ever raise a false alarm there.
     std::error_code error;
     const fs::perms permissions = fs::status(metadata.path, error).permissions();
     constexpr fs::perms executable =
@@ -176,6 +179,7 @@ inline void report_model_observations(const ModelMetadata& metadata) {
             "Model file is marked executable. It is only ever read as data, never run: " +
             metadata.path.string());
     }
+#endif
 
     const std::string filename = metadata.path.filename().string();
     if (filename.find(metadata.variant) == std::string::npos) {
@@ -198,7 +202,7 @@ inline void report_model_observations(const ModelMetadata& metadata) {
 inline void report_model(const ModelMetadata& metadata) {
     std::cout << "MODEL|" << metadata.variant << '|'
               << (metadata.multilingual ? "multilingual" : "english") << '|'
-              << metadata.size_bytes << '|' << metadata.path.string() << std::endl;
+              << metadata.size_bytes << '|' << protocol_path(metadata.path) << std::endl;
     std::cout << "Model: " << metadata.variant << ", "
               << (metadata.multilingual ? "multilingual" : "English-only") << ", "
               << metadata.size_bytes / (1024.0 * 1024.0) << " MB, "
