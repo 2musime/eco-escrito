@@ -6,14 +6,14 @@ never loads Whisper itself, so the event loop stays free.
 
 ## Screens
 
-A landing page and four screens, one job each, chosen from the bar across the
+A welcome page and four screens, one job each, chosen from the bar across the
 top. The screen you are on is highlighted in the bar.
 
 | Screen | Holds | Reached by |
 |---|---|---|
-| **Home** | a tile for each feature, recent transcripts | opens here; `Home`, the name in the bar, or `Ctrl+0` |
-| **Practice** | a sentence to read, one button, the result word by word | `Practice`, `Ctrl+1`, or its tile |
-| **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, or **Record freely instead** |
+| **Welcome** | the icon, one line, two ways in | opens here; the name in the bar, or `Ctrl+0` |
+| **Practice** | a sentence to read, one button, the result word by word | `Practice`, `Ctrl+1`, or **Practise Pronunciation** |
+| **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, **New Recording**, or **Record freely instead** |
 | **Transcripts** | the saved list and a reader | `Transcripts`, or `Ctrl+H` |
 | **Speeches** | recordings, and a player for them | `Speeches`, or `Ctrl+P` |
 
@@ -21,33 +21,18 @@ The bar is navigation and nothing else. Pressing **Recording** goes to the
 recording screen; it does not start a recording. Starting is done there, with
 the model, microphone and limit already in view.
 
-## Home
+## Welcome
 
-Home is the landing page, laid out the way a Mac welcome window is: one centred
-column, so the eye moves from the icon to the promise to the choices.
+The welcome page has no tab of its own; the name in the bar leads back to it.
+It is deliberately almost empty, on white, because every screen is already one
+click away in the bar:
 
-- **Hero:** the application icon on a white tile, a greeting for the time of
-  day, the title *Your voice, in writing.*, and one sentence on what the
-  application does. The sentence is capped at about sixty characters a line.
-- **Get started:** a tile per feature, each a single button with a drawn icon
-  (a white glyph on a gradient square, in the manner of the macOS system
-  icons), its name, what it does, and one line of live detail such as
-  *4 transcripts saved*. Two columns when there is room for the descriptions,
-  one below that.
-- **Recent transcripts:** the four newest, each opening the transcripts screen
-  with that one already selected, plus **See All**. With none, it says what
-  will appear and offers **Start a Recording**.
-- **Footnote:** the offline promise, said once and quietly.
+- the application icon
+- one line: *Your voice, in writing. On your own computer.*
+- **New Recording**, the primary action, and **Practise Pronunciation** beside it
 
-Home is re-read from disk each time it is shown, so its counts and list are
-never stale.
-
-### Adding a feature
-
-Each tile comes from one entry in the `features` table in `build_home_page`:
-name, description, detail line, glyph, two gradient colours, shortcut, and what
-opening it does. A new feature adds an entry, and a glyph to `FeatureGlyph` if
-none fits, and gets a tile in the same grid and voice as the others.
+A new feature gets a tab in the bar. It earns a button here only if it becomes
+one of the main reasons to open the application.
 
 Practice explains itself: a three-step **How it works** strip sits under the
 result, so a first-time user never needs Help to understand it. See
@@ -82,12 +67,13 @@ put pale text on white cards.
 
 - **Colours:** the macOS system palette, so the application reads as a calm
   Mac utility on any desktop: `#f5f5f7` window, `#1d1d1f` text, `#6e6e73`
-  secondary text, `#007aff` accent, `#e5e5ea` hairlines. Feature icons use
-  the system indigo, red, blue and orange.
-- **Header:** the name (which also goes home), Home and the four screens, an
+  secondary text, `#007aff` accent, `#e5e5ea` hairlines.
+- **Header:** the name (which also leads to the welcome page), the four screens, an
   **Offline** badge, and Help. The window will not narrow past the width the
   bar needs, so no label is ever cut short. The badge replaces the old "Processed on this computer" footer note, so the
   privacy promise is visible on every screen without being repeated.
+- **Footer:** what the screen is doing on the left; **Privacy** and the version
+  on the right. The title bar carries the name alone.
 - **Cards:** the practice sentence, its result, the steps, and the record panel
   each sit on a white card, so related controls read as one thing.
 - **One primary action per screen,** in the accent blue: **Start Speaking** on
@@ -232,7 +218,7 @@ found rather than memorised.
 | `Esc` | Cancel whatever the worker is doing |
 | `Ctrl+S` | Save the transcript to a file |
 | `Ctrl+Shift+C` | Copy the whole transcript |
-| `Ctrl+0` | Go to Home |
+| `Ctrl+0` | Go to the welcome page |
 | `Ctrl+1` | Go to Practice |
 | `Ctrl+2` | Go to Recording |
 | `Ctrl+H` | Go to saved transcripts |

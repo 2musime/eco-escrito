@@ -14,7 +14,7 @@ fail() { checks=$((checks + 1)); failures=$((failures + 1)); echo "  FAIL $1"; [
 
 FILES="main.cpp gui_main.cpp miniaudio_impl.cpp partial_text.h ui_state.h diagnostics.h
        audio_ring_buffer.h file_storage.h model_info.h speech_detection.h wav_io.h
-       audio_player.h transcript_library.h practice.h home.h
+       audio_player.h transcript_library.h practice.h
        tests/unit_tests.cpp tests/gui_tests.cpp tests/test_harness.h"
 
 found="$(grep -lP '\t' $FILES 2>/dev/null)"

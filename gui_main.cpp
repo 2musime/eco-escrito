@@ -1,5 +1,4 @@
 #include "audio_player.h"
-#include "home.h"
 #include "partial_text.h"
 #include "practice.h"
 #include "transcript_library.h"
@@ -12,24 +11,18 @@
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDateTime>
-#include <QEvent>
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QFile>
 #include <QFrame>
-#include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QGuiApplication>
 #include <QIcon>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QPainter>
-#include <QPainterPath>
 #include <QPalette>
 #include <QPlainTextEdit>
 #include <QProcess>
@@ -41,7 +34,6 @@
 #include <QTime>
 #include <QTextCursor>
 #include <QListWidget>
-#include <QLocale>
 #include <QActionGroup>
 #include <QShortcut>
 #include <QSlider>
@@ -53,7 +45,6 @@
 #include <QVBoxLayout>
 
 #include <algorithm>
-#include <functional>
 
 namespace {
 
@@ -118,37 +109,24 @@ QPlainTextEdit:focus { border-color: #007aff; }
 QListWidget::item { padding: 8px 10px; }
 QListWidget::item:selected { background: #e8f1ff; color: #0062cc; }
 QStatusBar { background: #ffffff; border-top: 1px solid #e5e5ea; color: #6e6e73; }
-QStatusBar QLabel { color: #6e6e73; }
+QStatusBar QLabel { color: #6e6e73; padding: 0 8px; }
 QProgressBar { background: #e5e5ea; border: none; border-radius: 4px; }
 QProgressBar::chunk { background: #007aff; border-radius: 4px; }
 QScrollArea { background: transparent; border: none; }
 QToolButton#brand { border: none; background: transparent; font-size: 15px; font-weight: 700; color: #1d1d1f;
                     padding: 4px 6px; }
 QToolButton#brand:hover { color: #000000; }
-QLabel#appIcon { background: #ffffff; border: 1px solid #e5e5ea; border-radius: 18px; }
-QLabel#eyebrow { font-size: 15px; font-weight: 600; color: #6e6e73; }
-QLabel#homeTitle { font-size: 30px; font-weight: 700; color: #1d1d1f; }
-QLabel#homeLead { font-size: 15px; color: #6e6e73; }
-QLabel#groupTitle { font-size: 13px; font-weight: 600; color: #6e6e73; }
-QPushButton#tile { background: #ffffff; border: 1px solid #e5e5ea; border-radius: 14px; text-align: left;
-                   padding: 0; }
-QPushButton#tile:hover { border-color: #d2d2d7; background: #fcfcfd; }
-QPushButton#tile:pressed { background: #f2f2f5; }
-QPushButton#tile:focus { border: 2px solid #80bdff; }
-QPushButton#tile:disabled { background: #fafafc; }
-QPushButton#tile QLabel, QPushButton#recentRow QLabel { background: transparent; }
-QLabel#tileTitle { font-size: 15px; font-weight: 600; color: #1d1d1f; }
-QLabel#tileBody { color: #6e6e73; }
-QLabel#tileMeta { font-size: 12px; color: #8e8e93; }
-QLabel#chevron { font-size: 20px; color: #c7c7cc; }
-QFrame#group { background: #ffffff; border: 1px solid #e5e5ea; border-radius: 12px; }
-QFrame#hairline { background: #e5e5ea; border: none; max-height: 1px; min-height: 1px; }
-QPushButton#recentRow { background: transparent; border: none; border-radius: 0; text-align: left; padding: 0; }
-QPushButton#recentRow:hover { background: #f5f5f7; }
-QPushButton#recentRow:focus { background: #e8f1ff; }
-QLabel#recentText { color: #1d1d1f; }
-QLabel#recentDate { color: #8e8e93; }
-QLabel#footnote { font-size: 12px; color: #8e8e93; }
+QWidget#welcome { background: #ffffff; }
+QLabel#welcomeTitle { font-size: 32px; font-weight: 600; color: #1d1d1f; }
+QPushButton#welcomePrimary { background: #007aff; color: #ffffff; border: none; border-radius: 10px;
+                             font-weight: 600; padding: 0 22px; }
+QPushButton#welcomePrimary:hover { background: #0062cc; }
+QPushButton#welcomeSecondary { border-radius: 10px; padding: 0 22px; }
+QStatusBar::item { border: none; }
+QPushButton#footerLink { border: none; background: transparent; color: #6e6e73; text-decoration: underline;
+                         padding: 0 6px; }
+QPushButton#footerLink:hover { color: #1d1d1f; }
+QLabel#footnote { font-size: 12px; color: #8e8e93; padding: 0 8px; }
 )");
 }
 
@@ -173,73 +151,6 @@ QPalette application_palette() {
     return palette;
 }
 
-// The glyphs drawn on the landing page's feature tiles.
-enum class FeatureGlyph { Practice, Microphone, Document, Waveform };
-
-// A feature's icon in the manner of the macOS system icons: a white glyph on a
-// rounded square filled with a soft vertical gradient. Drawn rather than loaded,
-// so it is crisp at any scale and adds no files to ship.
-QPixmap feature_icon(FeatureGlyph glyph, const QColor& top, const QColor& bottom, int size) {
-    const qreal ratio = qApp->devicePixelRatio();
-    QPixmap pixmap(static_cast<int>(size * ratio), static_cast<int>(size * ratio));
-    pixmap.setDevicePixelRatio(ratio);
-    pixmap.fill(Qt::transparent);
-
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::Antialiasing);
-    const qreal s = size;
-    QLinearGradient fill(0, 0, 0, s);
-    fill.setColorAt(0, top);
-    fill.setColorAt(1, bottom);
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(fill);
-    painter.drawRoundedRect(QRectF(0, 0, s, s), s * 0.24, s * 0.24);
-
-    QPen pen(Qt::white, s * 0.075, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-    painter.setPen(pen);
-    painter.setBrush(Qt::NoBrush);
-    switch (glyph) {
-        case FeatureGlyph::Practice: {
-            // A speech bubble with a tick: say it, and see that it came through.
-            QPainterPath bubble;
-            bubble.addRoundedRect(QRectF(s * 0.22, s * 0.24, s * 0.56, s * 0.40), s * 0.12, s * 0.12);
-            painter.drawPath(bubble);
-            painter.drawLine(QPointF(s * 0.36, s * 0.64), QPointF(s * 0.32, s * 0.76));
-            painter.drawLine(QPointF(s * 0.32, s * 0.76), QPointF(s * 0.46, s * 0.64));
-            painter.drawPolyline(QPolygonF({QPointF(s * 0.39, s * 0.44), QPointF(s * 0.47, s * 0.51),
-                                            QPointF(s * 0.61, s * 0.37)}));
-            break;
-        }
-        case FeatureGlyph::Microphone: {
-            painter.setBrush(Qt::white);
-            painter.drawRoundedRect(QRectF(s * 0.40, s * 0.20, s * 0.20, s * 0.36), s * 0.10, s * 0.10);
-            painter.setBrush(Qt::NoBrush);
-            painter.drawArc(QRectF(s * 0.31, s * 0.30, s * 0.38, s * 0.36), 200 * 16, 140 * 16);
-            painter.drawLine(QPointF(s * 0.50, s * 0.66), QPointF(s * 0.50, s * 0.78));
-            painter.drawLine(QPointF(s * 0.40, s * 0.78), QPointF(s * 0.60, s * 0.78));
-            break;
-        }
-        case FeatureGlyph::Document: {
-            painter.drawRoundedRect(QRectF(s * 0.28, s * 0.20, s * 0.44, s * 0.60), s * 0.07, s * 0.07);
-            for (const qreal y : {0.36, 0.48, 0.60}) {
-                const qreal end = y == 0.60 ? 0.52 : 0.60;
-                painter.drawLine(QPointF(s * 0.40, s * y), QPointF(s * end, s * y));
-            }
-            break;
-        }
-        case FeatureGlyph::Waveform: {
-            const qreal heights[] = {0.16, 0.34, 0.50, 0.30, 0.20};
-            for (int i = 0; i < 5; ++i) {
-                const qreal x = s * (0.26 + 0.12 * i);
-                const qreal half = s * heights[i] / 2;
-                painter.drawLine(QPointF(x, s * 0.5 - half), QPointF(x, s * 0.5 + half));
-            }
-            break;
-        }
-    }
-    return pixmap;
-}
-
 // Colours for each mark, shared by the result and its legend.
 QString mark_colour(WordMark mark) {
     switch (mark) {
@@ -261,7 +172,8 @@ QString quoted(const std::string& word) {
 class EcoEscritoWindow final : public QMainWindow {
 public:
     EcoEscritoWindow() {
-        setWindowTitle(QString("Eco-escrito %1").arg(ECO_ESCRITO_VERSION));
+        // The version is in the footer; the title bar carries the name alone.
+        setWindowTitle("Eco-escrito");
         resize(1040, 720);
         // Below this the settings row wraps and the transcript stops being usable.
         setMinimumSize(640, 420);
@@ -599,11 +511,11 @@ public:
         speech_body->addWidget(player_panel, 1);
         speech_layout->addLayout(speech_body, 1);
 
-        QWidget* home_page_widget = build_home_page();
+        QWidget* welcome_widget = build_welcome_page();
 
         // Added in Page order, which is what setCurrentIndex relies on.
         stack_ = new QStackedWidget(this);
-        stack_->addWidget(home_page_widget);
+        stack_->addWidget(welcome_widget);
         stack_->addWidget(practice_widget);
         stack_->addWidget(central);
         stack_->addWidget(library_page);
@@ -614,6 +526,14 @@ public:
         context_label_ = new QLabel(this);
         context_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
         statusBar()->addWidget(context_label_, 1);
+        auto* privacy_link = new QPushButton("Privacy", this);
+        privacy_link->setObjectName("footerLink");
+        privacy_link->setCursor(Qt::PointingHandCursor);
+        connect(privacy_link, &QPushButton::clicked, this, [this] { show_privacy_notice(); });
+        statusBar()->addPermanentWidget(privacy_link);
+        auto* version = new QLabel(QString("Eco-escrito %1").arg(ECO_ESCRITO_VERSION), this);
+        version->setObjectName("footnote");
+        statusBar()->addPermanentWidget(version);
         update_context_bar();
 
         process_ = new QProcess(this);
@@ -690,13 +610,13 @@ public:
 
         next_sentence();
         apply_state(UiState::Ready);
-        // Start on the landing page, which leads to everything else.
-        show_home();
+        // Always open on the welcome page.
+        show_welcome();
     }
 
 private:
     // The screens, in the order they sit in the stack.
-    enum Page { home_page, practice_page, recorder_page, library_page, speeches_page };
+    enum Page { welcome_page, practice_page, recorder_page, library_page, speeches_page };
 
     // A practice attempt is the same pipeline with a fixed short limit, literal
     // decoding, and nothing kept: it is a drill, not something to file away.
@@ -959,7 +879,7 @@ private:
         brand->setIconSize(QSize(22, 22));
         brand->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         brand->setCursor(Qt::PointingHandCursor);
-        brand->setToolTip("Home (Ctrl+0)");
+        brand->setToolTip("Welcome page (Ctrl+0)");
         brand->setAccessibleName("Eco-escrito home");
         brand->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         bar->addWidget(brand);
@@ -989,8 +909,15 @@ private:
             return action;
         };
 
-        home_action_ = add_screen("H&ome", QKeySequence("Ctrl+0"), [this] { show_home(); });
-        connect(brand, &QToolButton::clicked, home_action_, &QAction::trigger);
+        // The welcome page has no tab: the name is the way back to it. Still in
+        // the group, so no tab is highlighted while it shows.
+        welcome_action_ = new QAction(this);
+        welcome_action_->setCheckable(true);
+        welcome_action_->setShortcut(QKeySequence("Ctrl+0"));
+        screens->addAction(welcome_action_);
+        addAction(welcome_action_);
+        connect(welcome_action_, &QAction::triggered, this, [this] { show_welcome(); });
+        connect(brand, &QToolButton::clicked, welcome_action_, &QAction::trigger);
         practice_action_ = add_screen("&Practice", QKeySequence("Ctrl+1"), [this] { show_practice(); });
         recorder_action_ = add_screen("&Recording", QKeySequence("Ctrl+2"),
                                       [this] { show_recorder(); });
@@ -1115,10 +1042,7 @@ private:
         // Navigating away mid-recording would hide the controls for the thing
         // still running, so the bar closes while it does.
         history_action_->setEnabled(controls.history);
-        home_action_->setEnabled(!ui_state_is_busy(state));
-        for (QPushButton* tile : home_tiles_) {
-            tile->setEnabled(!ui_state_is_busy(state));
-        }
+        welcome_action_->setEnabled(!ui_state_is_busy(state));
         practice_action_->setEnabled(!ui_state_is_busy(state));
         recorder_action_->setEnabled(!ui_state_is_busy(state));
         speeches_action_->setEnabled(controls.history);
@@ -1961,359 +1885,63 @@ private:
         QMainWindow::closeEvent(event);
     }
 
-    // ---------------------------------------------------------------- home
+    // ------------------------------------------------------------- welcome
 
-    // One entry per feature. A feature added later gets a tile by adding a line
-    // to the table in build_home_page, in the same grid and voice as the rest.
-    struct HomeFeature {
-        QString title;
-        QString description;
-        QString meta;
-        FeatureGlyph glyph;
-        QColor top;
-        QColor bottom;
-        QString shortcut;
-        QLabel** meta_label;
-        std::function<void()> open;
-    };
-
-    // The landing page: who it is for, what it can do, and what was done last.
-    // Laid out the way a Mac application's welcome window is: a calm hero, a
-    // grid of large targets, and a short list of recent work.
-    QWidget* build_home_page() {
-        auto* content = new QWidget(this);
-        content->setMaximumWidth(860);
-        content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        auto* layout = new QVBoxLayout(content);
-        layout->setContentsMargins(32, 40, 32, 28);
+    // The icon, one line, and the two ways in. Everything else is in the bar,
+    // so nothing here repeats it.
+    QWidget* build_welcome_page() {
+        auto* page = new QWidget(this);
+        page->setObjectName("welcome");
+        auto* layout = new QVBoxLayout(page);
+        layout->setContentsMargins(24, 24, 24, 24);
         layout->setSpacing(0);
+        layout->addStretch(1);
 
-        // ---- Hero. Centred, as a Mac welcome window is: one column, so the
-        // eye lands on the icon, then the promise, then the choices below.
-        auto* app_icon = new QLabel(content);
-        app_icon->setObjectName("appIcon");
-        app_icon->setPixmap(QIcon(":/icons/eco-escrito-512.png").pixmap(46, 46));
-        app_icon->setAlignment(Qt::AlignCenter);
-        app_icon->setFixedSize(76, 76);
-        layout->addWidget(app_icon, 0, Qt::AlignHCenter);
-        layout->addSpacing(18);
-
-        home_greeting_ = new QLabel(content);
-        home_greeting_->setObjectName("eyebrow");
-        home_greeting_->setAlignment(Qt::AlignCenter);
-        layout->addWidget(home_greeting_);
-        layout->addSpacing(2);
-        auto* title = new QLabel("Your voice, in writing.", content);
-        title->setObjectName("homeTitle");
-        title->setAlignment(Qt::AlignCenter);
-        layout->addWidget(title);
-        layout->addSpacing(8);
-        auto* lead = new QLabel("Practise your pronunciation, dictate freely, and keep every transcript. "
-                                "Everything happens on this computer, and nothing is sent anywhere.", content);
-        lead->setObjectName("homeLead");
-        lead->setWordWrap(true);
-        lead->setAlignment(Qt::AlignCenter);
-        // A measure of about sixty characters reads comfortably; the full width
-        // does not. Centred by stretches rather than an alignment flag, which
-        // would stop the layout asking the label how tall its wrapped text is.
-        lead->setMaximumWidth(560);
-        auto* lead_row = new QHBoxLayout();
-        lead_row->addStretch();
-        lead_row->addWidget(lead, 1);
-        lead_row->addStretch();
-        layout->addLayout(lead_row);
-        layout->addSpacing(40);
-
-        // ---- Features.
-        const std::vector<HomeFeature> features = {
-            {"Practice", "Read a sentence aloud and see which words came through, changed, or were missed.",
-             QString("%1 sentences, 15 seconds each").arg(practice_sentences().size()),
-             FeatureGlyph::Practice, QColor("#7d7aff"), QColor("#5856d6"), "Ctrl+1", nullptr,
-             [this] { show_practice(); }},
-            {"Recording", "Speak freely and watch the words appear. The transcript is saved for you.",
-             "Speed or accuracy, up to 10 minutes",
-             FeatureGlyph::Microphone, QColor("#ff7a6e"), QColor("#ff3b30"), "Ctrl+2", nullptr,
-             [this] { show_recorder(); }},
-            {"Transcripts", "Read, copy, save, or delete everything you have dictated.",
-             QString(), FeatureGlyph::Document, QColor("#5ab0ff"), QColor("#007aff"), "Ctrl+H",
-             &home_transcripts_meta_, [this] { show_library(); }},
-            {"Speeches", "Listen back to your recordings, exactly as you said them.",
-             QString(), FeatureGlyph::Waveform, QColor("#ffbb4d"), QColor("#ff9500"), "Ctrl+P",
-             &home_speeches_meta_, [this] { show_speeches(); }},
-        };
-
-        auto* features_title = new QLabel("Get started", content);
-        features_title->setObjectName("groupTitle");
-        layout->addWidget(features_title);
-        layout->addSpacing(10);
-
-        home_grid_ = new QGridLayout();
-        home_grid_->setHorizontalSpacing(12);
-        home_grid_->setVerticalSpacing(12);
-        for (const HomeFeature& feature : features) {
-            build_feature_tile(feature, content);
-        }
-        arrange_tiles(2);
-        layout->addLayout(home_grid_);
-        // Two columns while each tile has room for its description, one below.
-        content->installEventFilter(this);
-        home_content_ = content;
-        layout->addSpacing(32);
-
-        // ---- Recent work.
-        auto* recent_header = new QHBoxLayout();
-        auto* recent_title = new QLabel("Recent transcripts", content);
-        recent_title->setObjectName("groupTitle");
-        recent_header->addWidget(recent_title);
-        recent_header->addStretch();
-        see_all_ = new QPushButton("See All", content);
-        see_all_->setObjectName("link");
-        see_all_->setCursor(Qt::PointingHandCursor);
-        recent_header->addWidget(see_all_);
-        layout->addLayout(recent_header);
-        layout->addSpacing(6);
-
-        recent_group_ = new QFrame(content);
-        recent_group_->setObjectName("group");
-        recent_layout_ = new QVBoxLayout(recent_group_);
-        recent_layout_->setContentsMargins(1, 4, 1, 4);
-        recent_layout_->setSpacing(0);
-        layout->addWidget(recent_group_);
+        auto* icon = new QLabel(page);
+        icon->setPixmap(QIcon(":/icons/eco-escrito-512.png").pixmap(120, 120));
+        icon->setAlignment(Qt::AlignCenter);
+        layout->addWidget(icon);
         layout->addSpacing(28);
 
-        // ---- The promise, said once and quietly.
-        auto* footnote = new QLabel(
-            "<span style='color:#34c759'>\u25cf</span>&nbsp; Running offline. "
-            "Audio and transcripts never leave this computer.", content);
-        footnote->setObjectName("footnote");
-        footnote->setTextFormat(Qt::RichText);
-        footnote->setAlignment(Qt::AlignCenter);
-        layout->addWidget(footnote);
-        layout->addStretch();
+        auto* title = new QLabel("Your voice, in writing. On your own computer.", page);
+        title->setObjectName("welcomeTitle");
+        title->setAlignment(Qt::AlignCenter);
+        title->setWordWrap(true);
+        layout->addWidget(title);
+        layout->addSpacing(28);
 
-        connect(see_all_, &QPushButton::clicked, this, [this] { show_library(); });
+        auto* record = new QPushButton("New Recording", page);
+        record->setObjectName("welcomePrimary");
+        record->setMinimumHeight(40);
+        record->setCursor(Qt::PointingHandCursor);
+        record->setDefault(true);
+        auto* practise = new QPushButton("Practise Pronunciation", page);
+        practise->setObjectName("welcomeSecondary");
+        practise->setMinimumHeight(40);
+        practise->setCursor(Qt::PointingHandCursor);
+        auto* actions = new QHBoxLayout();
+        actions->setSpacing(12);
+        actions->addStretch();
+        actions->addWidget(record);
+        actions->addWidget(practise);
+        actions->addStretch();
+        layout->addLayout(actions);
+        layout->addStretch(1);
 
-        auto* holder = new QWidget(this);
-        holder->setObjectName("page");
-        auto* holder_layout = new QHBoxLayout(holder);
-        holder_layout->setContentsMargins(0, 0, 0, 0);
-        holder_layout->addStretch(1);
-        holder_layout->addWidget(content, 10);
-        holder_layout->addStretch(1);
-
-        auto* scroll = new QScrollArea(this);
-        scroll->setWidget(holder);
-        scroll->setWidgetResizable(true);
-        scroll->setFrameShape(QFrame::NoFrame);
-        return scroll;
+        connect(record, &QPushButton::clicked, this, [this] { show_recorder(); });
+        connect(practise, &QPushButton::clicked, this, [this] { show_practice(); });
+        return page;
     }
 
-    // A large target: icon, name, what it does, and one line of live detail.
-    // A button underneath, so it takes focus, answers Space and Enter, and is
-    // announced as one control rather than four labels.
-    QPushButton* build_feature_tile(const HomeFeature& feature, QWidget* parent) {
-        auto* tile = new QPushButton(parent);
-        tile->setObjectName("tile");
-        tile->setCursor(Qt::PointingHandCursor);
-        tile->setMinimumHeight(112);
-        tile->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        tile->setAccessibleName(feature.title);
-        tile->setAccessibleDescription(feature.description);
-        tile->setToolTip(QString("Open %1 (%2)").arg(feature.title, feature.shortcut));
-
-        auto* row = new QHBoxLayout(tile);
-        row->setContentsMargins(18, 16, 14, 16);
-        row->setSpacing(14);
-
-        auto* icon = new QLabel(tile);
-        icon->setPixmap(feature_icon(feature.glyph, feature.top, feature.bottom, 44));
-        icon->setFixedSize(44, 44);
-        row->addWidget(icon, 0, Qt::AlignTop);
-
-        auto* text = new QVBoxLayout();
-        text->setSpacing(3);
-        auto* name = new QLabel(feature.title, tile);
-        name->setObjectName("tileTitle");
-        text->addWidget(name);
-        auto* body = new QLabel(feature.description, tile);
-        body->setObjectName("tileBody");
-        body->setWordWrap(true);
-        text->addWidget(body);
-        auto* meta = new QLabel(feature.meta, tile);
-        meta->setObjectName("tileMeta");
-        text->addSpacing(2);
-        text->addWidget(meta);
-        text->addStretch();
-        row->addLayout(text, 1);
-        if (feature.meta_label != nullptr) {
-            *feature.meta_label = meta;
-        }
-
-        auto* chevron = new QLabel("\u203a", tile);
-        chevron->setObjectName("chevron");
-        row->addWidget(chevron, 0, Qt::AlignVCenter);
-
-        // Children never take the mouse, so hover and press belong to the tile.
-        for (QLabel* label : {icon, name, body, meta, chevron}) {
-            label->setAttribute(Qt::WA_TransparentForMouseEvents);
-        }
-        connect(tile, &QPushButton::clicked, this, feature.open);
-        home_tiles_.push_back(tile);
-        return tile;
-    }
-
-    void arrange_tiles(int columns) {
-        if (columns == home_columns_) {
-            return;
-        }
-        home_columns_ = columns;
-        for (QPushButton* tile : home_tiles_) {
-            home_grid_->removeWidget(tile);
-        }
-        for (int column = 0; column < 2; ++column) {
-            home_grid_->setColumnStretch(column, column < columns ? 1 : 0);
-        }
-        for (std::size_t i = 0; i < home_tiles_.size(); ++i) {
-            const int index = static_cast<int>(i);
-            home_grid_->addWidget(home_tiles_[i], index / columns, index % columns);
-        }
-    }
-
-    bool eventFilter(QObject* watched, QEvent* event) override {
-        if (watched == home_content_ && event->type() == QEvent::Resize) {
-            constexpr int two_column_width = 700;
-            arrange_tiles(home_content_->width() >= two_column_width ? 2 : 1);
-        }
-        return QMainWindow::eventFilter(watched, event);
-    }
-
-    void show_home() {
+    void show_welcome() {
         if (ui_state_is_busy(state_)) {
             return;
         }
         stop_playback_if_running();
-        refresh_home();
-        stack_->setCurrentIndex(home_page);
-        home_action_->setChecked(true);
+        stack_->setCurrentIndex(welcome_page);
+        welcome_action_->setChecked(true);
         context_label_->setText("Ready");
         apply_state(state_);
-    }
-
-    // Read from disk each time Home is shown: the counts and the recent list
-    // change on other screens, and a stale landing page is worse than a re-read.
-    void refresh_home() {
-        home_greeting_->setText(greeting_for_hour(QTime::currentTime().hour()));
-
-        const fs::path root(data_directory_.toStdString());
-        const std::vector<TranscriptEntry> transcripts = list_transcripts(root);
-        const std::size_t recordings = list_recordings(root).size();
-        home_transcripts_meta_->setText(
-            QString::fromStdString(count_phrase(transcripts.size(), "transcript", "transcripts")) + " saved");
-        home_speeches_meta_->setText(
-            QString::fromStdString(count_phrase(recordings, "recording", "recordings")) + " kept");
-
-        while (QLayoutItem* item = recent_layout_->takeAt(0)) {
-            if (QWidget* widget = item->widget()) {
-                widget->hide();
-                widget->deleteLater();
-            }
-            delete item;
-        }
-        see_all_->setVisible(!transcripts.empty());
-
-        if (transcripts.empty()) {
-            // An empty state says what will appear and how to make it appear.
-            auto* empty = new QWidget(recent_group_);
-            auto* empty_layout = new QVBoxLayout(empty);
-            empty_layout->setContentsMargins(16, 22, 16, 18);
-            empty_layout->setSpacing(4);
-            auto* note = new QLabel("No transcripts yet", empty);
-            note->setObjectName("tileTitle");
-            note->setAlignment(Qt::AlignCenter);
-            empty_layout->addWidget(note);
-            auto* hint = new QLabel("What you dictate on the Recording screen is saved and listed here.", empty);
-            hint->setObjectName("muted");
-            hint->setAlignment(Qt::AlignCenter);
-            hint->setWordWrap(true);
-            empty_layout->addWidget(hint);
-            auto* start = new QPushButton("Start a Recording", empty);
-            start->setObjectName("link");
-            start->setCursor(Qt::PointingHandCursor);
-            connect(start, &QPushButton::clicked, this, [this] { show_recorder(); });
-            empty_layout->addWidget(start, 0, Qt::AlignHCenter);
-            recent_layout_->addWidget(empty);
-            return;
-        }
-
-        constexpr std::size_t shown = 4;
-        for (std::size_t i = 0; i < std::min(shown, transcripts.size()); ++i) {
-            if (i > 0) {
-                auto* line = new QFrame(recent_group_);
-                line->setObjectName("hairline");
-                recent_layout_->addWidget(line);
-            }
-            recent_layout_->addWidget(build_recent_row(transcripts[i]));
-        }
-    }
-
-    QPushButton* build_recent_row(const TranscriptEntry& entry) {
-        auto* row = new QPushButton(recent_group_);
-        row->setObjectName("recentRow");
-        row->setCursor(Qt::PointingHandCursor);
-        row->setMinimumHeight(46);
-        const QString preview = entry.preview.empty() ? QString("Empty transcript")
-                                                      : QString::fromStdString(entry.preview);
-        const QString when = format_when(entry.stamp.when);
-        row->setAccessibleName(QString("%1, %2").arg(when, preview));
-        row->setToolTip(preview);
-
-        auto* layout = new QHBoxLayout(row);
-        layout->setContentsMargins(16, 10, 12, 10);
-        layout->setSpacing(12);
-        auto* text = new QLabel(row);
-        text->setObjectName("recentText");
-        // Elided here because a QLabel will not: unbroken text would otherwise
-        // widen the whole page.
-        text->setText(text->fontMetrics().elidedText(preview, Qt::ElideRight, 560));
-        text->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        layout->addWidget(text, 1);
-        auto* date = new QLabel(when, row);
-        date->setObjectName("recentDate");
-        layout->addWidget(date);
-        auto* chevron = new QLabel("\u203a", row);
-        chevron->setObjectName("chevron");
-        layout->addWidget(chevron);
-        for (QLabel* label : {text, date, chevron}) {
-            label->setAttribute(Qt::WA_TransparentForMouseEvents);
-        }
-
-        const fs::path path = entry.path;
-        connect(row, &QPushButton::clicked, this, [this, path] { open_transcript(path); });
-        return row;
-    }
-
-    static QString format_when(const std::tm& when) {
-        const QDate date(when.tm_year + 1900, when.tm_mon + 1, when.tm_mday);
-        const QDate today = QDate::currentDate();
-        const QString day = QString::fromUtf8(relative_day(date.daysTo(today)));
-        if (!day.isEmpty()) {
-            return QString("%1, %2").arg(day, QTime(when.tm_hour, when.tm_min).toString("HH:mm"));
-        }
-        return QLocale().toString(date, date.year() == today.year() ? "d MMM" : "d MMM yyyy");
-    }
-
-    // Opens the library with this transcript already selected and showing.
-    void open_transcript(const fs::path& path) {
-        show_library();
-        if (stack_->currentIndex() != library_page) {
-            return;
-        }
-        for (std::size_t i = 0; i < entries_.size(); ++i) {
-            if (entries_[i].path == path) {
-                history_list_->setCurrentRow(static_cast<int>(i));
-                return;
-            }
-        }
     }
 
     // ------------------------------------------------------------ practice
@@ -2707,16 +2335,7 @@ private:
     QListWidget* history_list_;
     QStackedWidget* stack_;
     QPushButton* go_record_button_;
-    QAction* home_action_;
-    std::vector<QPushButton*> home_tiles_;
-    QLabel* home_greeting_;
-    QLabel* home_transcripts_meta_;
-    QLabel* home_speeches_meta_;
-    QGridLayout* home_grid_;
-    QWidget* home_content_ = nullptr;
-    int home_columns_ = 0;
-    QVBoxLayout* recent_layout_;
-    QFrame* recent_group_;
+    QAction* welcome_action_;
     QPushButton* see_all_;
     QPushButton* delete_all_button_;
     QPlainTextEdit* saved_view_;

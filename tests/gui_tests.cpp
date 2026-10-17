@@ -1,6 +1,5 @@
 #include "test_harness.h"
 
-#include "home.h"
 #include "partial_text.h"
 #include "ui_state.h"
 
@@ -180,25 +179,6 @@ void test_state_transitions() {
     }
 }
 
-void test_home_wording() {
-    harness::begin("Home screen wording");
-
-    CHECK_TEXT("early morning is morning", std::string(greeting_for_hour(5)), "Good morning");
-    CHECK_TEXT("noon starts the afternoon", std::string(greeting_for_hour(12)), "Good afternoon");
-    CHECK_TEXT("six starts the evening", std::string(greeting_for_hour(18)), "Good evening");
-    CHECK_TEXT("late night says hello, not good night", std::string(greeting_for_hour(23)), "Hello");
-    CHECK_TEXT("small hours say hello", std::string(greeting_for_hour(2)), "Hello");
-
-    CHECK_TEXT("same day is today", std::string(relative_day(0)), "Today");
-    CHECK_TEXT("one day back is yesterday", std::string(relative_day(1)), "Yesterday");
-    CHECK_TEXT("older is shown as a date", std::string(relative_day(2)), "");
-    CHECK_TEXT("a date in the future is shown as a date", std::string(relative_day(-1)), "");
-
-    CHECK_TEXT("none reads as no", count_phrase(0, "transcript", "transcripts"), "No transcripts");
-    CHECK_TEXT("one is singular", count_phrase(1, "transcript", "transcripts"), "1 transcript");
-    CHECK_TEXT("many are plural", count_phrase(12, "transcript", "transcripts"), "12 transcripts");
-}
-
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -206,6 +186,5 @@ int main(int argc, char** argv) {
     test_overlap_merging();
     test_partial_growth_is_bounded();
     test_state_transitions();
-    test_home_wording();
     return harness::summary();
 }
