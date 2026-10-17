@@ -64,6 +64,24 @@ QString worker_program() {
 #endif
 }
 
+// Paths cross into Qt as text and back. On Windows the narrow form is the
+// active code page, not the UTF-8 Qt assumes, so the wide form carries them.
+QString path_text(const fs::path& path) {
+#if defined(Q_OS_WIN)
+    return QString::fromStdWString(path.wstring());
+#else
+    return QString::fromStdString(path.string());
+#endif
+}
+
+fs::path text_path(const QString& text) {
+#if defined(Q_OS_WIN)
+    return fs::path(text.toStdWString());
+#else
+    return fs::path(text.toStdString());
+#endif
+}
+
 // One light theme, set on the application so dialogs match the window. The
 // palette is fixed rather than taken from the desktop: these colours assume a
 // light background, and a dark system palette would put pale text on white.
@@ -463,7 +481,7 @@ public:
         populate_devices();
         // Resolved here rather than waiting for the worker, so saved
         // transcripts can be read before anything has been recorded.
-        data_directory_ = QString::fromStdString(application_data_directory().string());
+        data_directory_ = path_text(application_data_directory());
         connect(delete_all_button_, &QPushButton::clicked, this, [this] { delete_recordings(); });
         connect(play_button_, &QPushButton::clicked, this, [this] { toggle_playback(); });
         connect(stop_play_button_, &QPushButton::clicked, this, [this] { stop_playback(); });
@@ -901,7 +919,7 @@ private:
     void save_saved() {
         const Session* session = current_session();
         const QString suggested = session != nullptr && session->transcript >= 0
-            ? QString::fromStdString(entries_[static_cast<std::size_t>(session->transcript)].path.filename().string())
+            ? path_text(entries_[static_cast<std::size_t>(session->transcript)].path.filename())
             : QString("transcription.txt");
         const QString path = QFileDialog::getSaveFileName(this, "Save a copy of your words", suggested);
         if (path.isEmpty()) {
@@ -1117,7 +1135,7 @@ private:
 
         const QSignalBlocker blocker(words_list_);
         words_list_->clear();
-        const fs::path root(data_directory_.toStdString());
+        const fs::path root = text_path(data_directory_);
         entries_ = list_transcripts(root);
         recordings_ = list_recordings(root);
 
@@ -1151,7 +1169,7 @@ private:
             const fs::path& file = session.transcript >= 0
                 ? entries_[static_cast<std::size_t>(session.transcript)].path
                 : recordings_[static_cast<std::size_t>(session.recording)].path;
-            item->setToolTip(QString::fromStdString(file.string()));
+            item->setToolTip(path_text(file));
             if (session.stamp.text == keep) {
                 words_list_->setCurrentRow(static_cast<int>(i));
             }
@@ -1187,7 +1205,7 @@ private:
             return;
         }
         const Session& session = sessions_[static_cast<std::size_t>(row)];
-        const fs::path root(data_directory_.toStdString());
+        const fs::path root = text_path(data_directory_);
         saved_title_->setText(friendly_stamp(session.stamp.when));
 
         bool has_text = false;
@@ -1300,7 +1318,7 @@ private:
             return;
         }
         std::string reason;
-        if (!delete_transcript(entry.path, fs::path(data_directory_.toStdString()), reason)) {
+        if (!delete_transcript(entry.path, text_path(data_directory_), reason)) {
             QMessageBox::warning(this, "Could not delete", QString::fromStdString(reason));
             return;
         }
@@ -1328,7 +1346,7 @@ private:
         player_.unload();
         play_timer_->stop();
         std::string reason;
-        if (!delete_recording(entry.path, entry.stamp, fs::path(data_directory_.toStdString()), reason)) {
+        if (!delete_recording(entry.path, entry.stamp, text_path(data_directory_), reason)) {
             QMessageBox::warning(this, "Could not delete", QString::fromStdString(reason));
             return;
         }
@@ -1364,7 +1382,7 @@ private:
         if (session == nullptr) {
             return;
         }
-        const CompanionAudio audio = companion_audio(session->stamp, fs::path(data_directory_.toStdString()));
+        const CompanionAudio audio = companion_audio(session->stamp, text_path(data_directory_));
 
         QMenu menu(this);
         QAction* copy = menu.addAction("&Copy", this, [this] { copy_saved(); });

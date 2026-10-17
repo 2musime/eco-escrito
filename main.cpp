@@ -1218,7 +1218,7 @@ int run(int argc, char** argv) {
             "Could not create the application data directory: " + data_directory.string());
         return 1;
     }
-    std::cout << "DATADIR|" << data_directory.string() << std::endl;
+    std::cout << "DATADIR|" << protocol_path(data_directory) << std::endl;
     std::cout << "Data directory: " << data_directory.string() << std::endl;
 
     if (show_privacy) {
