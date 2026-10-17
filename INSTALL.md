@@ -95,9 +95,16 @@ bash scripts/install-model.sh base.en --dir models
 
 ## Requirements
 
-x86-64 Linux or Windows, about 1 GB free memory for `base.en`, a microphone, and
-no network connection at all after the model is in place. Full detail in
-[docs/PERFORMANCE.md](docs/PERFORMANCE.md).
+| | Minimum |
+|---|---|
+| OS | Fedora Linux or Windows, x86-64 |
+| CPU | Any x86-64 processor, 2+ cores (transcription is CPU only) |
+| Memory | 1 GB free for `base.en`, 1.5 GB for `small.en` |
+| Disk | ~20 MB for the app, plus 142 MB (`base.en`) or 466 MB (`small.en`) |
+| Audio | Any microphone reachable through PipeWire, PulseAudio or ALSA, or any Windows input device |
+| Network | None after the model is in place |
+
+Full detail in [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 Windows support is built and packaged from the same source as the Linux build.
 The build, tests, transcription and installer have been verified on Windows 11;
@@ -114,15 +121,21 @@ live microphone capture has not yet been tried there, so report what breaks.
 On Windows the same three directories sit under
 `%LOCALAPPDATA%\eco-escrito\`.
 
-They are readable only by you: on Linux through explicit permissions, on
-Windows through the per-user ACL that `%LOCALAPPDATA%` already carries. Delete
-everything stored with:
+On Linux `$XDG_DATA_HOME/eco-escrito/` is used instead when that variable is set.
+
+They are readable only by you: on Linux through explicit permissions
+(directories `0700`, files `0600`), on Windows through the per-user ACL that
+`%LOCALAPPDATA%` already carries. If you used the app when it was called Audio
+to Text, your `audio-to-text` folder is moved here the first time Eco-escrito
+starts. See [docs/FILE_STORAGE.md](docs/FILE_STORAGE.md).
+
+Delete everything stored with:
 
 ```bash
 eco_escrito_cli --delete-recordings
 ```
 
-or the **Delete recordings** button in the interface.
+or **Delete Everything...** in **My Words**.
 
 ## Uninstalling
 
@@ -144,3 +157,16 @@ On both systems the uninstaller removes only the program. The second command
 removes your recordings, transcripts and any model you installed -- which is
 why it is separate, and deliberately not something an uninstaller decides for
 you. Nothing is left elsewhere.
+
+## Known limitations
+
+- x86-64 and CPU only, with no GPU backend.
+- English only: the `base.en` and `small.en` models are the ones tested.
+  Multilingual models load, but they are untested.
+- Packaged for Fedora (`.rpm`) and Windows (installer). There is no `.deb` or
+  Flatpak package.
+- On Windows, the build, tests, transcription and installer are verified on
+  Windows 11; live microphone capture has not been tried yet, and the
+  installer is unsigned, so SmartScreen warns on first run.
+- Practice compares words, not sounds, so a mispronounced word that Whisper
+  still recognises with confidence is marked clear.
