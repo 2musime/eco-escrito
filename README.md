@@ -10,6 +10,7 @@ the program never opens a network connection.
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C)
 ![Qt 6](https://img.shields.io/badge/Qt-6-41CD52)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+[![GitHub stars](https://img.shields.io/github/stars/2musime/eco-escrito?style=social)](https://github.com/2musime/eco-escrito)
 
 ## Table of contents
 
@@ -26,6 +27,7 @@ the program never opens a network connection.
 - [Documentation](#documentation)
 - [Known limitations](#known-limitations)
 - [Contributing](#contributing)
+- [Author](#author)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
@@ -255,6 +257,17 @@ tests/run_gates.sh --quick  # skip the sanitizer build
    boundaries.
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
+
+## Author
+
+Made by **David TUMUSIME**, who loves building useful things with technology.
+
+- GitHub: [@2musime](https://github.com/2musime)
+- Instagram: [@2musime](https://www.instagram.com/2musime)
+
+If Eco-escrito is useful to you, please
+[star it on GitHub](https://github.com/2musime/eco-escrito). It helps other
+people find it.
 
 ## License
 

@@ -45,6 +45,15 @@ Models are the one thing that ever comes from the network, and only when you
 download them yourself with the vendored script. See
 [MODEL_VALIDATION.md](MODEL_VALIDATION.md).
 
+### Links to the author and the project
+
+The footer's **Made by David TUMUSIME** and **Star on GitHub**, and the links
+in **About**, point at GitHub and Instagram. Clicking one asks the desktop to
+open that address in your web browser; the browser makes the connection, not
+Eco-escrito. Nothing is fetched to show them, and nothing happens unless you
+click. The addresses are kept with the project's other metadata in
+`CMakeLists.txt`, and the guarantees gate still finds no URL in the sources.
+
 ## What is written, and where
 
 Only inside the application data directory, and only readable by you — on
