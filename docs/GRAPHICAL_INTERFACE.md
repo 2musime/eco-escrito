@@ -13,7 +13,7 @@ top. The screen you are on is highlighted in the bar.
 |---|---|---|
 | **Welcome** | the icon, one line, two ways in | opens here; the name in the bar, or `Ctrl+0` |
 | **Practice** | a sentence to read, one button, the result word by word | `Practice`, `Ctrl+1`, or **Practise Pronunciation** |
-| **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, **New Recording**, or **Record freely instead** |
+| **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, or **New Recording** |
 | **Transcripts** | the saved list and a reader | `Transcripts`, or `Ctrl+H` |
 | **Speeches** | recordings, and a player for them | `Speeches`, or `Ctrl+P` |
 
@@ -34,9 +34,25 @@ click away in the bar:
 A new feature gets a tab in the bar. It earns a button here only if it becomes
 one of the main reasons to open the application.
 
-Practice explains itself: a three-step **How it works** strip sits under the
-result, so a first-time user never needs Help to understand it. See
-[PRACTICE.md](PRACTICE.md).
+## One design for every screen
+
+Every screen follows the welcome page:
+
+- **White, and a centred column.** Each screen is capped (Practice 760 px,
+  Recording 860 px, the two library screens 1120 px), so a full-screen window
+  does not stretch a line across 1920 px.
+- **The content is the hero.** The sentence on Practice, the clock on Recording,
+  the transcript on Transcripts, and the player on Speeches.
+- **One filled button per screen,** the pill in the accent blue: **Start
+  Speaking**, **Start Recording**, **Play**. It turns red and reads **Stop** while
+  recording.
+- **Everything else is a quiet text button:** blue for actions, red for deleting.
+  None of them has a border or a fill until it is hovered.
+- **No titles or explanations on the page.** The tab already says where you are.
+  What a control does is in its tooltip, and what the application is doing is
+  in the footer.
+- **Grey fills instead of bordered cards:** the live transcript, the practice
+  result, and your own practice sentence.
 
 Navigation closes while a recording or transcription is running. The controls
 for something still running must not be hidden behind another screen.
@@ -63,49 +79,46 @@ One light theme, applied to the whole application so dialogs match the window.
 The Fusion style draws the same on Linux and Windows, which is what lets one
 style sheet serve both. The palette is fixed rather than taken from the
 desktop: the colours assume a light background, and a dark system palette would
-put pale text on white cards.
+put pale text on white.
 
 - **Colours:** the macOS system palette, so the application reads as a calm
-  Mac utility on any desktop: `#f5f5f7` window, `#1d1d1f` text, `#6e6e73`
-  secondary text, `#007aff` accent, `#e5e5ea` hairlines.
+  Mac utility on any desktop: `#ffffff` pages, `#f5f5f7` fills, `#1d1d1f`
+  text, `#6e6e73` secondary text, `#007aff` accent, `#ff3b30` destructive,
+  `#e5e5ea` hairlines.
 - **Header:** the name (which also leads to the welcome page), the four screens, an
   **Offline** badge, and Help. The window will not narrow past the width the
-  bar needs, so no label is ever cut short. The badge replaces the old "Processed on this computer" footer note, so the
-  privacy promise is visible on every screen without being repeated.
+  bar needs, so no label is ever cut short. The badge keeps the privacy
+  promise visible on every screen without repeating it.
 - **Footer:** what the screen is doing on the left; **Privacy** and the version
   on the right. The title bar carries the name alone.
-- **Cards:** the practice sentence, its result, the steps, and the record panel
-  each sit on a white card, so related controls read as one thing.
-- **One primary action per screen,** in the accent blue: **Start Speaking** on
-  Practice, **Start Recording** on Recording. Start Speaking turns red while
-  recording and reads **Stop and Check**.
-- **Width:** the practice screen is centred and capped at 820 px, so a
-  full-screen window does not stretch a sentence across 1920 px. It scrolls on
-  a short window.
+- **Dropdowns:** rounded, with a drawn chevron shipped in normal and `@2x`
+  sizes, so they stay crisp on high-density screens. The chevron is a PNG
+  because an SVG would need the Qt SVG plugin, which the package does not
+  depend on.
+- **Lists:** a sidebar divided from its content by a hairline. The selected
+  row is filled in the accent colour.
 
 ## Recording screen
 
 ```text
-Record freely
-Dictate anything. The transcript is saved and appears under Transcripts.
-Model [base.en v]  Microphone [default v]  Limit [15s v]  [x] Keep audio files
-+-------------------------------------------------------------+
-|  [Start Recording]  Stop Recording     00:23 / 01:00         |
-|  * Recording. Speak now.                                     |
-|  ####################-------------------------              |
-+-------------------------------------------------------------+
-Transcript                                        [Save] [Copy]
-+-------------------------------------------------------------+
-|                                                             |
-+-------------------------------------------------------------+
-base (english, 141.1 MB) . Built-in Audio
+      [Speed: base.en v] [System default v] [15 seconds v]  [x] Keep audio
+
+                           00:23 / 01:00
+                       ( ■  Stop Recording )
+                          * Recording. Speak now.
+                            ----------
+                                                          Copy  Save
++-------------------------------------------------------------------+
+|  Your words will appear here.                                     |
++-------------------------------------------------------------------+
 ```
 
-**Settings are sized to their contents.** A two-item model list stretched across
-the window told nobody anything.
+**Settings need no labels.** Each value says what it is (`Speed: base.en`,
+`15 seconds`, the microphone's name), and each list is sized to its contents.
 
-**Recording is one panel.** The button, the clock, the status line and the
-progress bar describe a single thing, so they are grouped as one.
+**One button.** It reads **Start Recording**, then **Stop Recording** (in red)
+while recording, then **Cancel** while the model loads or the audio is being
+transcribed. `Ctrl+R` and `Esc` do the same.
 
 **Context lives in the status bar.** The model, input device and output path
 were four stacked labels reading `Model: not loaded`, `Input: not selected`,
@@ -119,14 +132,17 @@ window suggests stalled work.
 
 `Transcripts` in the top bar, or `Ctrl+H`, shows the library: a list of every
 transcript the application has written, newest first, each named for when it was
-made:
+made, the way a person would say it:
 
 ```text
-transcription-20260913002054
+Today, 14:32
+Yesterday, 18:11
+Fri 9 Oct, 10:10
 ```
 
 That name and nothing else, matching how recordings are named on the Speeches
-screen. What a transcript says is one click away; repeating a fragment of it on
+screen. The file name on disk is in each row's tooltip. The newest one is
+selected and shown on arrival. What a transcript says is one click away; repeating a fragment of it on
 every row is noise.
 
 It is a separate screen rather than a panel beside the recorder. Nothing on it
@@ -135,30 +151,24 @@ is no model selector, no limit, no record button and no progress bar. A control
 that cannot be reached needs no rule about when it may be used.
 
 Selecting a row reads that transcript into the pane on the right, headed with
-the same name, and marked `(audio deleted)` when the recording it came from is
-gone. The reader has its own view, so nothing about browsing disturbs a live
+the same name, whose tooltip says when the recording it came from is gone. The reader has its own view, so nothing about browsing disturbs a live
 transcription.
 
 **The library cannot be opened while a recording or transcription is running.**
 The whole navigation bar greys out until the worker finishes, and the recording
 shortcuts are inert while the library is showing.
 
-**Delete Transcript** sits in the bottom right corner, directly beneath the
-transcript it would remove, so the target is never ambiguous. It is enabled only
-while a transcript is on screen, and asks for confirmation naming the date
-first.
-
-Its colour is ember rather than plain red: destructive enough to give pause, but
-not the colour the interface uses for something having gone wrong.
+**Delete** sits beside **Copy** and **Save a Copy**, above the transcript it would
+remove, in red text. It is enabled only while a transcript is on screen, and
+asks for confirmation naming the date first.
 
 The recording the transcript came from is kept.
-**Delete All Recordings**, at the top of this screen, remains the only way to
-remove audio.
+**Delete All Recordings**, under the list, remains the only way to remove audio.
 
 After a deletion the reader moves to a neighbouring transcript rather than
 going blank: the row that takes the deleted one's place, or the row above when
 the deleted one was last. Only when nothing is left does the reader empty and
-the list show `No saved transcripts yet`.
+the list show `No transcripts yet`.
 
 Right-clicking a row additionally offers:
 
@@ -168,7 +178,7 @@ Right-clicking a row additionally offers:
 - **Delete This Transcript** — the same action as the button
 
 The list is rebuilt when a new transcript is saved and after deleting
-everything. With nothing stored it reads `No saved transcripts yet` rather than
+everything. With nothing stored it reads `No transcripts yet` rather than
 showing an empty box.
 
 Reading is confined the same way writing is: a path resolving outside the
@@ -178,16 +188,13 @@ than followed. See [FILE_STORAGE.md](FILE_STORAGE.md).
 ## Speeches
 
 `Speeches`, or `Ctrl+P`, lists every recording newest first, each named for when
-it was made:
+it was made, as transcripts are (`Today, 14:32`).
 
-```text
-recording-20260913145545
-```
-
-That name and nothing else, left aligned as a list of files should be. Length,
-size and whether it was transcribed belong to the recording you have selected,
-not to every row, and appear beneath the player once one is chosen. The player
-itself is centred. Selecting a row loads it; **Play**, **Stop** and the position
+That name and nothing else. Length, size and whether it was transcribed belong to
+the recording you have selected, not to every row, and appear under its name in
+the player once one is chosen: `0:07 · 0.2 MB · Transcribed`. The player is
+centred: name, a large clock, the position slider, then **Play** and a quiet
+**Stop**. Selecting a row loads it; **Play**, **Stop** and the position
 slider work as they do anywhere else.
 
 **What plays is the raw capture.** Each recording produces three files: the raw
@@ -199,7 +206,7 @@ for transcription, not for listening.
 Playback stops when you leave the screen, so audio never continues behind a
 recording.
 
-**Delete Recording** removes the raw capture and its two processed copies. The
+**Delete Recording**, in red text at the bottom right, removes the raw capture and its two processed copies. The
 transcript is kept: text is small, and losing it along with the audio would be a
 surprise. Deleting moves to a neighbouring recording rather than going blank.
 

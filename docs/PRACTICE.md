@@ -10,7 +10,7 @@ often write "I think so", because that is the likelier sentence. For dictation
 that is a feature. For a learner it hides the very mistake they need to see.
 
 Nothing in Whisper turns this off. Practice mode pushes back in three ways, and
-is honest on screen about the rest.
+is honest about the rest in the tooltip on the colour key under each result.
 
 1. **Comparison with the target.** The learner's sentence is known, so every
    word Whisper wrote differently is shown, with what it heard instead.
