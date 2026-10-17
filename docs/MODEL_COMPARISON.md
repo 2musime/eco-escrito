@@ -28,7 +28,7 @@ Build and run the application in comparison mode:
 
 ```bash
 cmake --build build -j2
-./build/audio_to_text --compare \
+./build/eco_escrito --compare \
   models/ggml-base.en.bin \
   models/ggml-small.en.bin \
   --threads 4
@@ -48,11 +48,11 @@ Use the same fixed sentence and repeat the comparison for a fair result. Accurac
 With no model argument, the application uses `models/ggml-base.en.bin`:
 
 ```bash
-./build/audio_to_text
+./build/eco_escrito
 ```
 
 A different model can be selected explicitly:
 
 ```bash
-./build/audio_to_text models/ggml-small.en.bin --threads 4
+./build/eco_escrito models/ggml-small.en.bin --threads 4
 ```

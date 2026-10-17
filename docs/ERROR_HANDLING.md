@@ -69,7 +69,7 @@ when it returns `EINTR`.
 Verify with:
 
 ```bash
-./build-release/audio_to_text_cli models/ggml-base.en.bin
+./build-release/eco_escrito_cli models/ggml-base.en.bin
 # press Ctrl+C at the prompt
 ```
 
@@ -88,12 +88,12 @@ Expected output is `Shutting down.` and exit status `0`.
 
 ```bash
 # Category reporting
-./build-release/audio_to_text_cli models/does-not-exist.bin
+./build-release/eco_escrito_cli models/does-not-exist.bin
 # ERROR|MODEL|Could not load Whisper model: models/does-not-exist.bin
 
 # Leaks and undefined behaviour
-cmake -S . -B build-sanitize -DCMAKE_BUILD_TYPE=Debug -DAUDIO_TO_TEXT_ENABLE_SANITIZERS=ON
+cmake -S . -B build-sanitize -DCMAKE_BUILD_TYPE=Debug -DECO_ESCRITO_ENABLE_SANITIZERS=ON
 cmake --build build-sanitize --parallel
 printf 'q\n' | ASAN_OPTIONS=detect_leaks=1 \
-  ./build-sanitize/audio_to_text_cli models/ggml-base.en.bin
+  ./build-sanitize/eco_escrito_cli models/ggml-base.en.bin
 ```

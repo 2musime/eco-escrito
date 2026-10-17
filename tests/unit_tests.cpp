@@ -20,9 +20,9 @@ constexpr std::uint32_t kRate = 16000;
 
 fs::path scratch_directory() {
     static const fs::path directory = [] {
-        const char* base = std::getenv("AUDIO_TO_TEXT_TEST_DIR");
+        const char* base = std::getenv("ECO_ESCRITO_TEST_DIR");
         fs::path path = base != nullptr ? fs::path(base)
-                                        : fs::temp_directory_path() / "audio_to_text_tests";
+                                        : fs::temp_directory_path() / "eco_escrito_tests";
         std::error_code error;
         fs::remove_all(path, error);
         fs::create_directories(path, error);
@@ -577,7 +577,7 @@ void test_storage_portability() {
     const fs::path data = application_data_directory();
     CHECK("the data directory is absolute", data.is_absolute());
     CHECK("the data directory is named for the application",
-          data.filename().string().find("audio-to-text") != std::string::npos);
+          data.filename().string().find("eco-escrito") != std::string::npos);
 
     // A model shipped beside the application is found through this, so it has
     // to be an absolute directory that really holds the running binary. On a
@@ -590,7 +590,7 @@ void test_storage_portability() {
     // This test binary is in it, which is the property the model root relies on.
     bool holds_a_binary = false;
     for (const fs::directory_entry& entry : fs::directory_iterator(beside, error)) {
-        if (entry.path().filename().string().find("audio_to_text") != std::string::npos) {
+        if (entry.path().filename().string().find("eco_escrito") != std::string::npos) {
             holds_a_binary = true;
         }
     }

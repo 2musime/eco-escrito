@@ -8,17 +8,23 @@ through an atomic write.
 
 On Linux, resolved in this order:
 
-1. `$XDG_DATA_HOME/audio-to-text`
-2. `$HOME/.local/share/audio-to-text`
-3. `./.audio-to-text` if neither variable is set
+1. `$XDG_DATA_HOME/eco-escrito`
+2. `$HOME/.local/share/eco-escrito`
+3. `./.eco-escrito` if neither variable is set
 
 On Windows:
 
-1. `%LOCALAPPDATA%\audio-to-text`
-2. `.\.audio-to-text` if the variable is not set
+1. `%LOCALAPPDATA%\eco-escrito`
+2. `.\.eco-escrito` if the variable is not set
 
 `LOCALAPPDATA` rather than `APPDATA`, because recordings are large and
 machine-local and should not follow the user onto another machine.
+
+Before it was renamed Eco-escrito, the application kept its data in an
+`audio-to-text` directory at the same location. If that directory exists and
+`eco-escrito` does not, it is moved to the new name the first time the data
+directory is resolved. If the move fails, the old directory keeps being used,
+so existing recordings never disappear.
 
 Layout:
 
@@ -108,18 +114,18 @@ directories in turn. The interface names models this way on purpose: a program
 started from a menu entry, a desktop shortcut or the Start Menu inherits no
 useful working directory, so a path relative to one cannot be relied on. A name
 containing a separator is still treated as a path and resolved as before, which
-keeps `audio_to_text_cli models/ggml-base.en.bin` working from a shell, and
+keeps `eco_escrito_cli models/ggml-base.en.bin` working from a shell, and
 keeps traversal out of the search.
 
 The path is canonicalised first, so `../../etc/passwd` and a model reached
 through a symbolic link both land outside the approved roots and are refused:
 
 ```text
-$ ./build-release/audio_to_text_cli /tmp/model.bin
+$ ./build-release/eco_escrito_cli /tmp/model.bin
 ERROR|MODEL|Model is outside the approved directories (...): /tmp/model.bin.
 Pass --model-dir to approve another directory.
 
-$ ./build-release/audio_to_text_cli /tmp/model.bin --model-dir /tmp
+$ ./build-release/eco_escrito_cli /tmp/model.bin --model-dir /tmp
 ```
 
 The model is also required to be an existing regular file. Model files are read
@@ -131,7 +137,7 @@ Because names are now generated, the worker announces each artefact in a
 parseable form on stdout:
 
 ```text
-SAVED|RECORDING|/home/you/.local/share/audio-to-text/recordings/...-recording.wav
+SAVED|RECORDING|/home/you/.local/share/eco-escrito/recordings/...-recording.wav
 SAVED|CLEANED|...
 SAVED|SPEECH|...
 SAVED|TRANSCRIPT|...
@@ -145,8 +151,8 @@ default when saving a copy. This replaces matching on the old fixed string
 
 ```bash
 # Refuses a model outside the approved roots
-./build-release/audio_to_text_cli /tmp/model.bin
+./build-release/eco_escrito_cli /tmp/model.bin
 
 # Permissions on produced files
-stat -c '%a %n' ~/.local/share/audio-to-text/recordings/*
+stat -c '%a %n' ~/.local/share/eco-escrito/recordings/*
 ```

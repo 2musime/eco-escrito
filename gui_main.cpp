@@ -52,9 +52,9 @@ namespace {
 // anything else, and one spelling everywhere is easier to reason about.
 QString worker_program() {
 #if defined(Q_OS_WIN)
-    return QCoreApplication::applicationDirPath() + "/audio_to_text_cli.exe";
+    return QCoreApplication::applicationDirPath() + "/eco_escrito_cli.exe";
 #else
-    return QCoreApplication::applicationDirPath() + "/audio_to_text_cli";
+    return QCoreApplication::applicationDirPath() + "/eco_escrito_cli";
 #endif
 }
 
@@ -153,10 +153,10 @@ QString quoted(const std::string& word) {
 
 }  // namespace
 
-class AudioToTextWindow final : public QMainWindow {
+class EcoEscritoWindow final : public QMainWindow {
 public:
-    AudioToTextWindow() {
-        setWindowTitle(QString("Audio to Text %1").arg(AUDIO_TO_TEXT_VERSION));
+    EcoEscritoWindow() {
+        setWindowTitle(QString("Eco-escrito %1").arg(ECO_ESCRITO_VERSION));
         resize(1040, 720);
         // Below this the settings row wraps and the transcript stops being usable.
         setMinimumSize(640, 420);
@@ -837,9 +837,9 @@ private:
         bar->setSpacing(4);
 
         auto* logo = new QLabel(header);
-        logo->setPixmap(QIcon(":/icons/audio-to-text-512.png").pixmap(22, 22));
+        logo->setPixmap(QIcon(":/icons/eco-escrito-512.png").pixmap(22, 22));
         bar->addWidget(logo);
-        auto* brand = new QLabel("Audio to Text", header);
+        auto* brand = new QLabel("Eco-escrito", header);
         brand->setObjectName("brand");
         bar->addWidget(brand);
         bar->addSpacing(24);
@@ -1743,13 +1743,13 @@ private:
     }
 
     void show_about() {
-        QMessageBox::about(this, "About Audio to Text",
-            QString("<b>Audio to Text %1</b><br>"
+        QMessageBox::about(this, "About Eco-escrito",
+            QString("<b>Eco-escrito %1</b><br>"
                     "Build %2, %3<br><br>"
                     "Offline speech to text. Audio never leaves this computer.<br><br>"
                     "Transcription by whisper.cpp, audio capture by miniaudio, "
                     "interface built with Qt 6.")
-                .arg(AUDIO_TO_TEXT_VERSION, AUDIO_TO_TEXT_GIT_COMMIT, AUDIO_TO_TEXT_BUILD_TYPE));
+                .arg(ECO_ESCRITO_VERSION, ECO_ESCRITO_GIT_COMMIT, ECO_ESCRITO_BUILD_TYPE));
     }
 
     void show_privacy_notice() {
@@ -2335,9 +2335,9 @@ int main(int argc, char* argv[]) {
     // dialogs carry it too. On Linux a desktop environment matches a running
     // window to its desktop entry by this name, which is how the launcher and
     // the taskbar end up showing the same icon.
-    application.setDesktopFileName("audio-to-text");
-    application.setWindowIcon(QIcon(":/icons/audio-to-text-512.png"));
-    AudioToTextWindow window;
+    application.setDesktopFileName("eco-escrito");
+    application.setWindowIcon(QIcon(":/icons/eco-escrito-512.png"));
+    EcoEscritoWindow window;
     window.show();
     return application.exec();
 }

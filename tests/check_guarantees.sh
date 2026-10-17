@@ -124,7 +124,7 @@ check_pe_binary() { # path, name
                   || fail "$name uses no TLS or HTTP symbol" "$(echo "$tls" | sort -u | tr '\n' ' ')"
 }
 
-for name in audio_to_text_cli audio_to_text; do
+for name in eco_escrito_cli eco_escrito; do
     binary="$BUILD/$name$EXE"
     if [ ! -f "$binary" ]; then
         skip "$name is not built"
@@ -138,7 +138,7 @@ for name in audio_to_text_cli audio_to_text; do
 done
 
 # Strongest available evidence: real work completing with no network at all.
-if [ ! -f "$BUILD/audio_to_text_cli$EXE" ] || [ ! -f "$ROOT/models/ggml-base.en.bin" ] \
+if [ ! -f "$BUILD/eco_escrito_cli$EXE" ] || [ ! -f "$ROOT/models/ggml-base.en.bin" ] \
    || [ ! -f "$ROOT/speech.wav" ]; then
     skip "network namespace test" "needs a built worker, a model and speech.wav"
 elif [ "$PLATFORM" != "linux" ]; then
@@ -148,7 +148,7 @@ elif [ "$PLATFORM" != "linux" ]; then
     skip "network namespace test" "no equivalent isolation on $PLATFORM"
 elif ! unshare -rn true 2>/dev/null; then
     skip "network namespace test" "unshare is unavailable here"
-elif unshare -rn -- "$BUILD/audio_to_text_cli" --benchmark --input "$ROOT/speech.wav" \
+elif unshare -rn -- "$BUILD/eco_escrito_cli" --benchmark --input "$ROOT/speech.wav" \
        "$ROOT/models/ggml-base.en.bin" --threads 2 2>&1 | grep -q '^PERF|'; then
     pass "a full transcription completes with no network namespace"
 else

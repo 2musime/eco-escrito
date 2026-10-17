@@ -1,7 +1,7 @@
 # Graphical interface
 
-The Qt6 interface is built as `audio_to_text`. The recorder and Whisper pipeline
-live in `audio_to_text_cli`; the GUI drives that worker with `QProcess` and
+The Qt6 interface is built as `eco_escrito`. The recorder and Whisper pipeline
+live in `eco_escrito_cli`; the GUI drives that worker with `QProcess` and
 never loads Whisper itself, so the event loop stays free.
 
 ## Screens
@@ -230,7 +230,7 @@ without saying why is a dead end.
 sudo dnf install qt6-qtbase-devel
 cmake -S . -B build-release
 cmake --build build-release --parallel
-./build-release/audio_to_text
+./build-release/eco_escrito
 ```
 
 ## States

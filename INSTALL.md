@@ -7,7 +7,7 @@ transcribed on your own machine; nothing is uploaded. See
 ## From a package (Fedora)
 
 ```bash
-sudo dnf install ./audio-to-text-*-Linux.rpm
+sudo dnf install ./eco-escrito-*-Linux.rpm
 ```
 
 The package pulls in `qt6-qtbase-gui`. It does **not** include a speech model:
@@ -17,7 +17,7 @@ touches the network.
 Install a model after the application:
 
 ```bash
-audio-to-text-install-model base.en --user
+eco-escrito-install-model base.en --user
 ```
 
 | Model | Size | Use |
@@ -29,18 +29,18 @@ audio-to-text-install-model base.en --user
 Then check it works:
 
 ```bash
-audio_to_text_cli --version
-audio_to_text_cli --list-devices
-audio_to_text          # the graphical interface
+eco_escrito_cli --version
+eco_escrito_cli --list-devices
+eco_escrito          # the graphical interface
 ```
 
 The GUI also appears in the desktop menu under Sound &amp; Video.
 
 ## From a package (Windows)
 
-Run `audio-to-text-<version>-win64.exe` and accept the default location. The
+Run `eco-escrito-<version>-win64.exe` and accept the default location. The
 installer places the program, the Whisper libraries, the Qt libraries **and the
-`base.en` speech model** in one directory, and adds **Audio to Text** to the
+`base.en` speech model** in one directory, and adds **Eco-escrito** to the
 Start Menu. There is nothing else to download and nothing to configure: open it
 from the Start Menu and record.
 
@@ -55,21 +55,21 @@ certificate, and you should be suspicious of any download that asks you to
 bypass the warning -- verify the file came from this project's releases page.
 
 The ZIP is the same files, model included, with no installer and no Start Menu
-entry. Unpack it anywhere and run `bin\audio_to_text.exe`. Keep the `models`
+entry. Unpack it anywhere and run `bin\eco_escrito.exe`. Keep the `models`
 folder beside the executable; that is where it is found.
 
 To use a different model, `small.en` for better accuracy:
 
 ```powershell
-& "$env:ProgramFiles\Audio to Text\bin\install-model.ps1" small.en
+& "$env:ProgramFiles\Eco-escrito\bin\install-model.ps1" small.en
 ```
 
-It downloads into `%LOCALAPPDATA%\audio-to-text\models` and prints the file's
+It downloads into `%LOCALAPPDATA%\eco-escrito\models` and prints the file's
 SHA-256. Then check the installation:
 
 ```powershell
-& "$env:ProgramFiles\Audio to Text\bin\audio_to_text_cli.exe" --version
-& "$env:ProgramFiles\Audio to Text\bin\audio_to_text_cli.exe" --list-devices
+& "$env:ProgramFiles\Eco-escrito\bin\eco_escrito_cli.exe" --version
+& "$env:ProgramFiles\Eco-escrito\bin\eco_escrito_cli.exe" --list-devices
 ```
 
 If `--list-devices` shows nothing, or recording produces silence, check
@@ -83,13 +83,13 @@ permission.
 See [docs/BUILDING.md](docs/BUILDING.md). In short:
 
 ```bash
-git clone --recurse-submodules git@github.com:2musime/offline-speech-to-text.git
-cd offline-speech-to-text
+git clone --recurse-submodules git@github.com:2musime/eco-escrito.git
+cd eco-escrito
 sudo dnf install gcc-c++ cmake make qt6-qtbase-devel
 cmake -S . -B build-release
 cmake --build build-release --parallel
 bash scripts/install-model.sh base.en --dir models
-./build-release/audio_to_text
+./build-release/eco_escrito
 ```
 
 ## Requirements
@@ -105,20 +105,20 @@ there and report what breaks.
 ## Where your files go
 
 ```text
-~/.local/share/audio-to-text/recordings/     WAV audio
-~/.local/share/audio-to-text/transcripts/    transcription text
-~/.local/share/audio-to-text/models/         models installed with --user
+~/.local/share/eco-escrito/recordings/     WAV audio
+~/.local/share/eco-escrito/transcripts/    transcription text
+~/.local/share/eco-escrito/models/         models installed with --user
 ```
 
 On Windows the same three directories sit under
-`%LOCALAPPDATA%\audio-to-text\`.
+`%LOCALAPPDATA%\eco-escrito\`.
 
 They are readable only by you: on Linux through explicit permissions, on
 Windows through the per-user ACL that `%LOCALAPPDATA%` already carries. Delete
 everything stored with:
 
 ```bash
-audio_to_text_cli --delete-recordings
+eco_escrito_cli --delete-recordings
 ```
 
 or the **Delete recordings** button in the interface.
@@ -128,15 +128,15 @@ or the **Delete recordings** button in the interface.
 Fedora:
 
 ```bash
-sudo dnf remove audio-to-text
-rm -rf ~/.local/share/audio-to-text
+sudo dnf remove eco-escrito
+rm -rf ~/.local/share/eco-escrito
 ```
 
-Windows: uninstall **Audio to Text** from *Settings -> Apps*, then remove your
+Windows: uninstall **Eco-escrito** from *Settings -> Apps*, then remove your
 data if you want it gone:
 
 ```powershell
-Remove-Item -Recurse -Force "$env:LOCALAPPDATA\audio-to-text"
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\eco-escrito"
 ```
 
 On both systems the uninstaller removes only the program. The second command
