@@ -1,9 +1,14 @@
 # Eco-escrito
 
-**Offline speech-to-text and pronunciation practice for your desktop.**
-Eco-escrito records your voice and transcribes it on your own computer with
-[whisper.cpp](https://github.com/ggml-org/whisper.cpp). Nothing is uploaded, and
-the program never opens a network connection.
+**Speak clearly, and keep what you say.**
+Eco-escrito writes down what you say and helps you pronounce English better,
+entirely on your own computer, using
+[whisper.cpp](https://github.com/ggml-org/whisper.cpp). It needs no internet, no
+account and no subscription, and nothing you say ever leaves the machine. It works
+in English, for now.
+
+The name is the idea: *eco* (echo) and *escrito* (written), so your voice,
+echoed in writing.
 
 ![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![Platforms](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-lightgrey)
@@ -14,6 +19,7 @@ the program never opens a network connection.
 
 ## Table of contents
 
+- [Who it helps](#who-it-helps)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -31,18 +37,38 @@ the program never opens a network connection.
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
+## Who it helps
+
+Anyone, of any age, anywhere, including places with slow, costly or no internet:
+
+- **A child or a new learner practising English sounds**, who gets told which
+  word to try again, privately, with no teacher watching and no score to fear.
+- **An older person, or anyone who finds typing hard**, writing a letter, a note
+  or a memory just by speaking.
+- **A student, journalist, nurse or lawyer** whose notes must not go to someone
+  else's server.
+- **Anyone offline:** on a plane, in a village classroom, or wherever mobile data
+  is too expensive to spend on a voice service.
+
 ## Features
 
-- **Fully offline.** Audio is captured, analysed and transcribed locally. A
-  network connection is only used once, to download a model, and the Windows
-  installer ships with one built in.
-- **Pronunciation practice.** Read a sentence aloud and each word is marked
-  right, changed, missed or worth checking. A mispronunciation that Whisper
-  quietly "corrected" is still flagged.
-- **Live dictation.** Partial text appears while you speak, and the full
-  transcript is written when you stop.
-- **Transcript and recording library.** Read, play back and delete past
-  sessions from the app.
+Three things a person wants to do, and a screen for each:
+
+- **Write by Voice: say something and see it written.** Your words appear while
+  you speak, and the full text is written down when you stop. Choose **Faster**
+  or **More accurate**.
+- **Practise: be understood.** Read a sentence aloud and see, word by word, what
+  came through: clear, heard differently, not heard, or say again. A
+  mispronunciation that Whisper quietly "corrected" is still flagged, and the
+  feedback names the one word to try next.
+- **My Words: find what you said.** Everything you have said, newest first, with
+  its text and its recording together. Read it, play it back, copy it, save it,
+  or delete the text or the recording on its own.
+
+And underneath:
+
+- **Fully offline.** A network connection is only used once, to download a
+  model, and the Windows installer ships with one built in.
 - **Private by default.** Files are written only to a per-user directory that
   only you can read, with atomic writes and no log files.
 - **Scriptable CLI** for streaming, benchmarking and comparing models.
@@ -89,15 +115,14 @@ Other models, upgrading and uninstalling are covered in [INSTALL.md](INSTALL.md)
 
 Launch the app with `eco_escrito`, or from your desktop's application menu.
 
-The app opens on a welcome page with two buttons, **New Recording** and
-**Practise Pronunciation**. Click the name in the top bar to come back to it.
+The app opens on a welcome page with two buttons, **Write by Voice** and
+**Practise**. Click the name in the top bar to come back to it.
 
 | Screen | What it does |
 |---|---|
-| **Practice** | Pick a sentence by the sound you want to work on, or type your own. Press **Start Speaking**, read it aloud, then press **Stop and Check**. Practice attempts are not saved. |
-| **Recording** | Free dictation. Choose a model, microphone and time limit, then record. |
-| **Transcripts** | Read or delete saved transcripts. |
-| **Speeches** | Play back saved recordings. |
+| **Write by Voice** (`Ctrl+1`) | Press **Start Speaking**, talk, then press **Stop**. Your words are written down and kept in My Words. |
+| **Practise** (`Ctrl+2`) | Pick a sentence by the sound you want to work on, or type your own. Press **Start Speaking**, read it aloud, then press **Stop and Check**. Practice attempts are not saved. |
+| **My Words** (`Ctrl+3`) | Everything you have said: read it, play it back, copy, save or delete it. |
 
 See [docs/PRACTICE.md](docs/PRACTICE.md) and
 [docs/GRAPHICAL_INTERFACE.md](docs/GRAPHICAL_INTERFACE.md) for details and

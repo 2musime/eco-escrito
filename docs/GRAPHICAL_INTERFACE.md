@@ -4,32 +4,75 @@ The Qt6 interface is built as `eco_escrito`. The recorder and Whisper pipeline
 live in `eco_escrito_cli`; the GUI drives that worker with `QProcess` and
 never loads Whisper itself, so the event loop stays free.
 
+## What it is for
+
+**Eco-escrito helps you speak clearly, and keeps what you say.** The name says
+the same thing: *eco* (echo) and *escrito* (written), so your voice, echoed in
+writing.
+
+It is built for anyone, of any age and anywhere: a child practising English
+sounds, an older person writing a letter without typing, a student taking notes,
+or someone whose words must not go online. So the interface is organised around
+what a person wants to do, not around the files the program writes.
+
+| A person wants to... | Screen |
+|---|---|
+| say something and see it written | **Write by Voice** |
+| be understood when they speak | **Practise** |
+| find what they said, read it, or hear it again | **My Words** |
+
+Under all three is one promise, said on the welcome page and in the bar: it
+works without the internet, and nothing leaves the computer.
+
 ## Screens
 
-A welcome page and four screens, one job each, chosen from the bar across the
-top. The screen you are on is highlighted in the bar.
+A welcome page and three screens, chosen from the bar across the top in the
+order people reach for them. The screen you are on is highlighted in the bar.
 
 | Screen | Holds | Reached by |
 |---|---|---|
 | **Welcome** | the icon, one line, two ways in | opens here; the name in the bar, or `Ctrl+0` |
-| **Practice** | a sentence to read, one button, the result word by word | `Practice`, `Ctrl+1`, or **Practise Pronunciation** |
-| **Recording** | settings, the record panel, the live transcript | `Recording`, `Ctrl+2`, or **New Recording** |
-| **Transcripts** | the saved list and a reader | `Transcripts`, or `Ctrl+H` |
-| **Speeches** | recordings, and a player for them | `Speeches`, or `Ctrl+P` |
+| **Write by Voice** | three quiet settings, the clock, one button, your words | `Ctrl+1`, or **Write by Voice** on the welcome page |
+| **Practise** | a sentence to read, one button, the result word by word | `Ctrl+2`, or **Practise** on the welcome page |
+| **My Words** | everything you have said: its text and its recording together | `Ctrl+3` |
 
-The bar is navigation and nothing else. Pressing **Recording** goes to the
-recording screen; it does not start a recording. Starting is done there, with
-the model, microphone and limit already in view.
+The bar is navigation and nothing else. Pressing **Write by Voice** goes to that
+screen; it does not start listening. Starting is done there, with the settings
+already in view.
+
+## Plain words
+
+Every label is written so that a ten-year-old, a seventy-year-old, or someone
+reading English as a second language can follow it, which also makes it easier
+to translate later. Technical names stay out of sight, in tooltips and the
+footer:
+
+| Instead of | It says |
+|---|---|
+| Transcripts, Speeches | **My Words** |
+| Speed: base.en / Accuracy: small.en | **Faster** / **More accurate** |
+| 15 seconds | **Up to 15 sec** |
+| Keep audio files | **Keep the recording** |
+| Start / Stop Recording | **Start Speaking** / **Stop** |
+| Loading model..., Transcribing 1 of 3 | **Getting ready...**, **Writing it down: part 1 of 3** |
+| Whisper heard: "..." | **We heard: "..."** |
+
+Errors say what to do next ("Check that a microphone is plugged in"), never
+only what failed.
 
 ## Welcome
 
 The welcome page has no tab of its own; the name in the bar leads back to it.
-It is deliberately almost empty, on white, because every screen is already one
-click away in the bar:
+It is deliberately almost empty, on white:
 
 - the application icon
-- one line: *Your voice, in writing. On your own computer.*
-- **New Recording**, the primary action, and **Practise Pronunciation** beside it
+- one line: *Speak clearly, and keep what you say.*
+- two buttons, each with its name and one line on what it does for you:
+  **Write by Voice** (*Speak, and see it written*), the primary action, and
+  **Practise** (*Hear which words need work*)
+- one honest footnote: *Works without the internet. English only, for now.*
+  Practice and dictation use English models, and saying so up front is kinder
+  than letting someone find out by trying.
 
 A new feature gets a tab in the bar. It earns a button here only if it becomes
 one of the main reasons to open the application.
@@ -38,24 +81,25 @@ one of the main reasons to open the application.
 
 Every screen follows the welcome page:
 
-- **White, and a centred column.** Each screen is capped (Practice 760 px,
-  Recording 860 px, the two library screens 1120 px), so a full-screen window
-  does not stretch a line across 1920 px.
-- **The content is the hero.** The sentence on Practice, the clock on Recording,
-  the transcript on Transcripts, and the player on Speeches.
+- **White, and a centred column.** Each screen is capped (Practise 760 px,
+  Write by Voice 860 px, My Words 1120 px), so a full-screen window does not
+  stretch a line across 1920 px.
+- **The content is the hero.** The sentence on Practise, the clock on Write by
+  Voice, and your words on My Words.
 - **One filled button per screen,** the pill in the accent blue: **Start
-  Speaking**, **Start Recording**, **Play**. It turns red and reads **Stop** while
-  recording.
+  Speaking** on both speaking screens, **Play** on My Words. While you speak it
+  turns red and reads **Stop**, or **Stop and Check** on Practise.
 - **Everything else is a quiet text button:** blue for actions, red for deleting.
   None of them has a border or a fill until it is hovered.
 - **No titles or explanations on the page.** The tab already says where you are.
   What a control does is in its tooltip, and what the application is doing is
   in the footer.
-- **Grey fills instead of bordered cards:** the live transcript, the practice
-  result, and your own practice sentence.
+- **Grey fills instead of bordered cards:** your words while you speak, the
+  practice result, and your own practice sentence.
 
-Navigation closes while a recording or transcription is running. The controls
-for something still running must not be hidden behind another screen.
+Navigation closes while you are speaking or while your words are being written
+down. The controls for something still running must not be hidden behind
+another screen.
 
 ## Where the actions live
 
@@ -64,11 +108,11 @@ the thing it affects:
 
 | Action | Where |
 |---|---|
-| Choose, type, and read a practice sentence | the practice screen |
+| Choose, type, and read a practice sentence | Practise |
 | Start, stop, cancel | the screen that started it |
-| Save, copy the live transcript | beside that transcript |
-| Save, copy, delete one saved transcript | beside the transcript being read |
-| Delete all recordings | the transcripts screen, which is what it empties |
+| Copy, save your words as they are written | above them, on Write by Voice |
+| Play, copy, save, or delete something you said | beside it, on My Words |
+| Delete everything | under the list on My Words, which is what it empties |
 | Privacy, About, Quit | `Help` |
 
 `Help` is the only entry in the bar that opens a menu; the rest switch screens.
@@ -81,14 +125,26 @@ style sheet serve both. The palette is fixed rather than taken from the
 desktop: the colours assume a light background, and a dark system palette would
 put pale text on white.
 
-- **Colours:** the macOS system palette, so the application reads as a calm
-  Mac utility on any desktop: `#ffffff` pages, `#f5f5f7` fills, `#1d1d1f`
-  text, `#6e6e73` secondary text, `#007aff` accent, `#ff3b30` destructive,
+- **Colours:** close to the macOS system palette, so the application reads as a
+  calm Mac utility on any desktop: `#ffffff` pages, `#f5f5f7` fills, `#1d1d1f`
+  text, `#6e6e73` secondary text, `#0066cc` accent, `#d70015` destructive,
   `#e5e5ea` hairlines.
-- **Header:** the name (which also leads to the welcome page), the four screens, an
-  **Offline** badge, and Help. The window will not narrow past the width the
-  bar needs, so no label is ever cut short. The badge keeps the privacy
-  promise visible on every screen without repeating it.
+- **Contrast:** every colour used for text reaches at least 4.5:1 against
+  white, the level small text needs to stay readable for older eyes and on a
+  cheap screen in sunlight. That is why the accent is `#0066cc` (5.6:1) rather
+  than Apple's brighter `#007aff` (4.0:1), the red is `#d70015` rather than
+  `#ff3b30`, and the grey of a word not heard in practice is `#6e6e73`. Only
+  disabled controls are paler.
+- **Size:** no text below 13 px, and no text button shorter than 32 px, for
+  unsteady hands and touchscreens.
+- **Dates and times** follow the computer's region: `Today, 2:32 PM` in the
+  United States, `Today, 14:32` in most other places. Month and day names come
+  from the region too.
+- **Never colour alone.** The practice key is in words, the state dot has a
+  tooltip and a spoken name, and every control has an accessible name.
+- **Header:** the name (which also leads to the welcome page), the three
+  screens, an **Offline** badge, and Help. The window will not narrow past the
+  width the bar needs, so no label is ever cut short.
 - **Footer:** what the screen is doing on the left, and one small outlined
   **Star us on GitHub** on the right that warms to yellow on hover. The
   version, who made it, and the GitHub and Instagram links are in
@@ -101,14 +157,14 @@ put pale text on white.
 - **Lists:** a sidebar divided from its content by a hairline. The selected
   row is filled in the accent colour.
 
-## Recording screen
+## Write by Voice
 
 ```text
-      [Speed: base.en v] [System default v] [15 seconds v]  [x] Keep audio
+   [Faster v] [Default microphone v] [Up to 1 min v]  [x] Keep the recording
 
                            00:23 / 01:00
-                       ( ■  Stop Recording )
-                          * Recording. Speak now.
+                            ( ■  Stop )
+                         * Listening. Speak now.
                             ----------
                                                           Copy  Save
 +-------------------------------------------------------------------+
@@ -116,102 +172,71 @@ put pale text on white.
 +-------------------------------------------------------------------+
 ```
 
-**Settings need no labels.** Each value says what it is (`Speed: base.en`,
-`15 seconds`, the microphone's name), and each list is sized to its contents.
+**Settings need no labels.** Each value says what it is (`Faster`,
+`Up to 1 min`, the microphone's name), and each list is sized to its contents.
+The model's real name is in the tooltip and the footer.
 
-**One button.** It reads **Start Recording**, then **Stop Recording** (in red)
-while recording, then **Cancel** while the model loads or the audio is being
-transcribed. `Ctrl+R` and `Esc` do the same.
+**One button.** It reads **Start Speaking**, then **Stop** (in red) while you
+speak, then **Cancel** while the model loads or your words are being written
+down. `Ctrl+R` and `Esc` do the same.
 
-**Context lives in the status bar.** The model, input device and output path
-were four stacked labels reading `Model: not loaded`, `Input: not selected`,
-`Saving to: not known yet` before anything had happened, which looks like a list
-of failures. They are now one line, showing only what is actually known.
+**Context lives in the footer.** The model, input device and output path are
+one line, showing only what is actually known.
 
 The progress bar is hidden unless something is running: an empty bar on an idle
-window suggests stalled work.
+window suggests stalled work. The live-text note under it appears only when the
+live text has fallen a second or more behind you.
 
-## Saved transcripts
+## My Words
 
-`Transcripts` in the top bar, or `Ctrl+H`, shows the library: a list of every
-transcript the application has written, newest first, each named for when it was
-made, the way a person would say it:
+Everything you have said, newest first, in one list. A session's text and its
+recording are shown together, because that is how a person remembers it: "what
+I said on Tuesday", not a transcript in one place and a WAV file in another.
+Each row is named for when it was said, the way a person would say it:
 
 ```text
-Today, 14:32
-Yesterday, 18:11
-Fri 9 Oct, 10:10
+Today, 2:32 PM
+Yesterday, 6:11 PM
+Fri 9 Oct, 10:10 AM
 ```
 
-That name and nothing else, matching how recordings are named on the Speeches
-screen. The file name on disk is in each row's tooltip. The newest one is
-selected and shown on arrival. What a transcript says is one click away; repeating a fragment of it on
-every row is noise.
+That name and nothing else. What it says is one click away; repeating a fragment
+of it on every row is noise. The file name on disk is in each row's tooltip.
+The newest is selected and shown on arrival.
 
-It is a separate screen rather than a panel beside the recorder. Nothing on it
-can start a recording, because none of the recording controls are present: there
-is no model selector, no limit, no record button and no progress bar. A control
-that cannot be reached needs no rule about when it may be used.
+Selecting a row shows, on the right:
 
-Selecting a row reads that transcript into the pane on the right, headed with
-the same name, whose tooltip says when the recording it came from is gone. The reader has its own view, so nothing about browsing disturbs a live
-transcription.
-
-**The library cannot be opened while a recording or transcription is running.**
-The whole navigation bar greys out until the worker finishes, and the recording
-shortcuts are inert while the library is showing.
-
-**Delete** sits beside **Copy** and **Save a Copy**, above the transcript it would
-remove, in red text. It is enabled only while a transcript is on screen, and
-asks for confirmation naming the date first.
-
-The recording the transcript came from is kept.
-**Delete All Recordings**, under the list, remains the only way to remove audio.
-
-After a deletion the reader moves to a neighbouring transcript rather than
-going blank: the row that takes the deleted one's place, or the row above when
-the deleted one was last. Only when nothing is left does the reader empty and
-the list show `No transcripts yet`.
-
-Right-clicking a row additionally offers:
-
-- **Copy** and **Save a Copy** of the transcript being read
-- **Audio:** which recordings survive for that session, or `not kept` when
-  retention was off or they have been deleted
-- **Delete This Transcript** — the same action as the button
-
-The list is rebuilt when a new transcript is saved and after deleting
-everything. With nothing stored it reads `No transcripts yet` rather than
-showing an empty box.
-
-Reading is confined the same way writing is: a path resolving outside the
-application's own directory, or one that is a symbolic link, is refused rather
-than followed. See [FILE_STORAGE.md](FILE_STORAGE.md).
-
-## Speeches
-
-`Speeches`, or `Ctrl+P`, lists every recording newest first, each named for when
-it was made, as transcripts are (`Today, 14:32`).
-
-That name and nothing else. Length, size and whether it was transcribed belong to
-the recording you have selected, not to every row, and appear under its name in
-the player once one is chosen: `0:07 · 0.2 MB · Transcribed`. The player is
-centred: name, a large clock, the position slider, then **Play** and a quiet
-**Stop**. Selecting a row loads it; **Play**, **Stop** and the position
-slider work as they do anywhere else.
+- its name and one line about it: `0:07 long`, `0:07 long, no text`, or
+  `Text only. The recording was not kept.`
+- a compact player (**Play**, the position, the time, **Stop**) when there is a
+  recording, and nothing at all when there is not
+- the text, or a short note when there is none
 
 **What plays is the raw capture.** Each recording produces three files: the raw
 audio, a noise-reduced copy, and the speech extracted from it. Only the
 extracted speech is sent to Whisper. Playback deliberately gives back the raw
 recording, because that is what was actually said; the processed versions exist
-for transcription, not for listening.
+for transcription, not for listening. Playback stops when you leave the screen.
 
-Playback stops when you leave the screen, so audio never continues behind a
-recording.
+**Delete** asks which part to lose, because the text and the recording are
+separate things: **Delete the Text...** keeps the recording, and **Delete the
+Recording...** keeps the text (the recording's two processed copies go with
+it). Each confirms first, naming the date. When one part is deleted, the session
+stays, showing what is left; when nothing is left, it leaves the list and the
+next one is shown. **Delete Everything...**, under the list, removes every
+recording and all of their text.
 
-**Delete Recording**, in red text at the bottom right, removes the raw capture and its two processed copies. The
-transcript is kept: text is small, and losing it along with the audio would be a
-surprise. Deleting moves to a neighbouring recording rather than going blank.
+Right-clicking a row offers **Copy**, **Save a Copy**, which audio files survive
+for that session (or `not kept`), and the two deletes.
+
+Nothing on this screen can start a recording, because none of the recording
+controls are present. **My Words cannot be opened while you are speaking or
+while your words are being written down**, and the recording shortcuts are
+inert while it shows.
+
+Reading is confined the same way writing is: a path resolving outside the
+application's own directory, or one that is a symbolic link, is refused rather
+than followed. See [FILE_STORAGE.md](FILE_STORAGE.md).
 
 Audio is played through the vendored miniaudio, the same library used to
 capture, so the application needs no media framework and the package still
@@ -220,27 +245,26 @@ depends only on `qt6-qtbase-gui`.
 ## Keyboard
 
 Every screen's shortcut appears in its tooltip in the top bar, so it can be
-found rather than memorised.
+found rather than memorised. The numbers follow the order of the bar.
 
 | Keys | Action |
 |---|---|
-| `Ctrl+R` | Start speaking or recording, or stop one in progress |
+| `Ctrl+R` | Start speaking, or stop |
 | `Esc` | Cancel whatever the worker is doing |
-| `Ctrl+S` | Save the transcript to a file |
-| `Ctrl+Shift+C` | Copy the whole transcript |
+| `Ctrl+S` | Save your words to a file |
+| `Ctrl+Shift+C` | Copy all of your words |
 | `Ctrl+0` | Go to the welcome page |
-| `Ctrl+1` | Go to Practice |
-| `Ctrl+2` | Go to Recording |
-| `Ctrl+H` | Go to saved transcripts |
-| `Ctrl+P` | Go to recordings |
-| `Up` / `Down` | Move through the saved transcripts |
+| `Ctrl+1` | Go to Write by Voice |
+| `Ctrl+2` | Go to Practise |
+| `Ctrl+3` | Go to My Words |
+| `Up` / `Down` | Move through My Words |
 | `Ctrl+Q` | Quit |
 
 `Ctrl+R` is one action rather than two, so the same key both starts and stops.
-On the practice screen it starts a practice attempt; anywhere else it goes to
-Recording and starts there.
-Plain `Ctrl+C` is left to the transcript for copying a selection, which is why
-copying the whole transcript takes the shifted form.
+On Practise it starts a practice attempt; anywhere else it goes to Write by
+Voice and starts there.
+Plain `Ctrl+C` is left to the text for copying a selection, which is why
+copying all of it takes the shifted form.
 
 ## State at a glance
 

@@ -87,9 +87,9 @@ timings, never audio or transcribed words.
 | Control | CLI | GUI |
 |---|---|---|
 | Show the privacy notice | `--privacy` | **Privacy** button |
-| Transcribe without keeping audio | `--no-retain-audio` | **Keep audio** checkbox |
+| Transcribe without keeping audio | `--no-retain-audio` | **Keep the recording** checkbox, off |
 | Transcribe without saving text | `--no-retain-transcript` | not exposed |
-| Delete everything stored | `--delete-recordings` | **Delete recordings** button |
+| Delete everything stored | `--delete-recordings` | **Delete Everything...** in My Words |
 
 Turning off audio retention still produces a transcript; only the WAV files are
 skipped. Completion is keyed off the transcription itself rather than off a file
