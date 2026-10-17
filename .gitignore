@@ -73,3 +73,7 @@ vcpkg_installed/
 Testing/
 .cache/
 build/
+# Visual Studio (Windows): Open Folder state and the presets' build tree
+.vs/
+out/
+CMakeUserPresets.json
