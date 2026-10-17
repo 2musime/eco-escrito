@@ -30,7 +30,7 @@ checks cannot find `dumpbin` and report themselves as skipped.
 `tests/platform.sh` holds everything the scripts need to know about the machine:
 the executable suffix, the processor count, whether the generator picks its
 configuration at build time, and where the binaries landed. Setting
-`AUDIO_TO_TEXT_PLATFORM` pins the answer, which is how the Windows branches get
+`ECO_ESCRITO_PLATFORM` pins the answer, which is how the Windows branches get
 exercised from a Linux machine.
 
 ### What does not run there, and why
@@ -90,7 +90,7 @@ doing the work.
 | Platform facts | `tests/platform.sh` | sourced by the others; not a gate itself |
 | Guarantees | `tests/check_guarantees.sh` | nothing private committed; no networking in source or binaries |
 | Formatting | `tests/check_style.sh` | tabs, trailing whitespace, line endings, final newline, 120 columns |
-| Warnings | build with `-DAUDIO_TO_TEXT_WARNINGS_AS_ERRORS=ON` | `-Wall -Wextra -Wpedantic -Werror` on this project's targets |
+| Warnings | build with `-DECO_ESCRITO_WARNINGS_AS_ERRORS=ON` | `-Wall -Wextra -Wpedantic -Werror` on this project's targets |
 | Tests | `ctest` | unit, interface and command-line suites |
 | Sanitizers | instrumented build | AddressSanitizer and UndefinedBehaviorSanitizer |
 

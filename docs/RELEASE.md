@@ -7,11 +7,11 @@ CMake generates `version.h` from it and records the short git commit, so a build
 can always identify itself:
 
 ```bash
-audio_to_text_cli --version
-# audio_to_text 1.2.0 (404259b, Release)
+eco_escrito_cli --version
+# eco_escrito 1.3.0 (f9d338a, Release)
 ```
 
-The GUI shows the same under **About**, and in its title bar.
+The GUI shows the same under **Help > About**.
 
 ## Checklist
 
@@ -45,10 +45,12 @@ Nothing else needs editing: the install commands in `README.md`, `INSTALL.md`
 and this file match any version on purpose. Confirm with:
 
 ```bash
-grep -rn "audio-to-text-[0-9]" README.md INSTALL.md docs/ | grep -v '\*'
+grep -rn "eco-escrito-[0-9]" README.md INSTALL.md docs/ | grep -v '\*'
 ```
 
-Anything it prints is a hard-coded version that will go stale.
+Anything it prints is a hard-coded version that will go stale. The one
+deliberate exception is the version badge at the top of `README.md`, which
+must be bumped by hand.
 
 **5. A fresh clone builds**
 
@@ -64,7 +66,7 @@ cmake --build /tmp/release-check/build --parallel
 cmake --build build-release --target package
 ```
 
-Produces `audio-to-text-<version>-Linux.rpm` and a `.tar.gz`.
+Produces `eco-escrito-<version>-Linux.rpm` and a `.tar.gz`.
 
 **7. The package installs on a clean system** with no build tools present, and
 the installed binaries run. See below.
@@ -72,7 +74,7 @@ the installed binaries run. See below.
 **8. Performance has not regressed**
 
 ```bash
-./build-release/audio_to_text_cli --benchmark --input speech.wav \
+./build-release/eco_escrito_cli --benchmark --input speech.wav \
   models/ggml-base.en.bin models/ggml-small.en.bin
 ```
 
@@ -85,12 +87,12 @@ On a Windows machine, from the same commit:
 
 ```bat
 cmake -S . -B build-release -DCMAKE_PREFIX_PATH="C:/Qt/6.x.x/msvc2022_64" ^
-  -DAUDIO_TO_TEXT_BUNDLE_MODEL=ON
+  -DECO_ESCRITO_BUNDLE_MODEL=ON
 cmake --build build-release --config Release --parallel
 cpack -C Release
 ```
 
-Produces `audio-to-text-<version>-win64.exe` when `makensis` is installed, and
+Produces `eco-escrito-<version>-win64.exe` when `makensis` is installed, and
 a ZIP either way. Run `tests/run_gates.sh --quick` under Git Bash there too; it
 reports which gates do not run on Windows rather than claiming a clean sweep.
 
@@ -103,8 +105,8 @@ artifacts are different versions is worse than one that ships Linux only.
 **10. Tag and publish**
 
 ```bash
-git tag -a v.1.2.0 -m "1.2.0"
-git push origin v.1.2.0
+git tag -a v.1.3.0 -m "1.3.0"
+git push origin v.1.3.0
 ```
 
 Attach every artifact to one GitHub release, so a single version number covers
@@ -127,13 +129,13 @@ formats and says which generator it skipped.
 
 | Component | Packaged | Why |
 |---|---|---|
-| `audio_to_text`, `audio_to_text_cli` | yes | the application |
-| `libwhisper`, `libggml`, `libggml-base`, `libggml-cpu` | yes, privately | built from the pinned submodule; installed to `/usr/lib64/audio-to-text` rather than competing with a system Whisper |
+| `eco_escrito`, `eco_escrito_cli` | yes | the application |
+| `libwhisper`, `libggml`, `libggml-base`, `libggml-cpu` | yes, privately | built from the pinned submodule; installed to `/usr/lib64/eco-escrito` rather than competing with a system Whisper |
 | Qt 6 | no, required | comes from the distribution as `qt6-qtbase-gui` |
 | Desktop entry and icons (Linux) | yes | so the GUI appears in the menu with its icon |
 | Start Menu shortcut (Windows) | yes | created by the NSIS installer |
 | Qt 6 (Windows) | yes | no distribution to provide it; `windeployqt` copies it in at install time |
-| `audio-to-text-install-model`, `install-model.ps1` | yes | fetches a model after installation |
+| `eco-escrito-install-model`, `install-model.ps1` | yes | fetches a model after installation |
 | Whisper models | **Windows only** | `base.en` ships in the Windows package, which has no distribution to fetch one from; the Fedora package still downloads it |
 
 Models are deliberately excluded. Packaging one would make the download implicit
@@ -149,7 +151,7 @@ wrong. The first package built here looked correct, listed the right files, and
 declared the right dependency, but the installed CLI would not start:
 
 ```text
-audio_to_text_cli: error while loading shared libraries: libwhisper.so.1
+eco_escrito_cli: error while loading shared libraries: libwhisper.so.1
 ```
 
 The runtime path had been built from `CMAKE_INSTALL_PREFIX`, which is
@@ -162,27 +164,27 @@ Run it in a throwaway container, which needs no spare machine:
 
 ```bash
 podman run --rm -v "$PWD/build-release:/pkg:Z" fedora:41 bash -c '
-  dnf -y install /pkg/audio-to-text-*.rpm &&
-  audio_to_text_cli --version &&
-  ldd /usr/bin/audio_to_text_cli | grep "not found" && echo BROKEN || echo OK'
+  dnf -y install /pkg/eco-escrito-*.rpm &&
+  eco_escrito_cli --version &&
+  ldd /usr/bin/eco_escrito_cli | grep "not found" && echo BROKEN || echo OK'
 ```
 
 Confirm before shipping:
 
 - no library reports `not found` for either binary
-- `audio_to_text_cli --version` prints the expected version
+- `eco_escrito_cli --version` prints the expected version
 - the GUI starts under `QT_QPA_PLATFORM=offscreen`
 - `desktop-file-validate` accepts the desktop entry
-- `audio-to-text-install-model --help` runs
+- `eco-escrito-install-model --help` runs
 
 
 
 ```bash
-sudo dnf install ./audio-to-text-*-Linux.rpm
-audio_to_text_cli --version
-audio-to-text-install-model base.en --user
-audio_to_text_cli --list-devices
+sudo dnf install ./eco-escrito-*-Linux.rpm
+eco_escrito_cli --version
+eco-escrito-install-model base.en --user
+eco_escrito_cli --list-devices
 ```
 
-The installed binaries carry an RPATH pointing at `/usr/lib64/audio-to-text`, so
+The installed binaries carry an RPATH pointing at `/usr/lib64/eco-escrito`, so
 they resolve the private Whisper libraries without `LD_LIBRARY_PATH`.

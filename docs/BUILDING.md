@@ -5,7 +5,7 @@
 Whisper is a submodule, so clone with it:
 
 ```bash
-git clone --recurse-submodules git@github.com:2musime/offline-speech-to-text.git
+git clone --recurse-submodules git@github.com:2musime/eco-escrito.git
 ```
 
 In an existing checkout that predates the submodule being registered:
@@ -48,27 +48,27 @@ When no build type is supplied, CMake configures this project as `Release`.
 The build produces:
 
 ```text
-build-release/audio_to_text       Qt GUI
-build-release/audio_to_text_cli  console worker
+build-release/eco_escrito       Qt GUI
+build-release/eco_escrito_cli  console worker
 ```
 
 Run the GUI:
 
 ```bash
-./build-release/audio_to_text
+./build-release/eco_escrito
 ```
 
 Run the CLI worker directly:
 
 ```bash
-./build-release/audio_to_text_cli models/ggml-small.en.bin --threads 4
+./build-release/eco_escrito_cli models/ggml-small.en.bin --threads 4
 ```
 
 Recordings are limited to 15 seconds by default. Supported limits are 15, 45
 and 60 seconds, and 300 or 600 seconds for dictation:
 
 ```bash
-./build-release/audio_to_text_cli models/ggml-small.en.bin \
+./build-release/eco_escrito_cli models/ggml-small.en.bin \
   --duration 45 --threads 4
 ```
 
@@ -90,8 +90,8 @@ Everything lands in one directory, because Windows resolves a DLL from the
 folder holding the executable and there is no RPATH to send it elsewhere:
 
 ```text
-build\bin\Release\audio_to_text.exe       Qt interface
-build\bin\Release\audio_to_text_cli.exe   console worker
+build\bin\Release\eco_escrito.exe       Qt interface
+build\bin\Release\eco_escrito_cli.exe   console worker
 build\bin\Release\whisper.dll             and the ggml libraries
 ```
 
@@ -100,7 +100,7 @@ build tree until either Qt's `bin` is on `PATH` or `windeployqt` has been run
 against it. Installing does that for you:
 
 ```bat
-cmake --install build --config Release --prefix C:\opt\audio-to-text
+cmake --install build --config Release --prefix C:\opt\eco-escrito
 ```
 
 The install step invokes `windeployqt` on the installed executable, which
@@ -112,12 +112,12 @@ To produce the release artifacts, with the model inside them:
 
 ```bat
 cmake -S . -B build -DCMAKE_PREFIX_PATH="C:/Qt/6.x.x/msvc2022_64" ^
-  -DAUDIO_TO_TEXT_BUNDLE_MODEL=ON
+  -DECO_ESCRITO_BUNDLE_MODEL=ON
 cmake --build build --config Release --parallel
 cpack -C Release
 ```
 
-`AUDIO_TO_TEXT_BUNDLE_MODEL` downloads `base.en` once per build tree, about
+`ECO_ESCRITO_BUNDLE_MODEL` downloads `base.en` once per build tree, about
 142 MB, and checks it against the hash pinned in `CMakeLists.txt`. It lands in
 `models` beside the executables, which the worker accepts as a model directory.
 Leave the option off for ordinary development builds; nobody compiling a change
@@ -147,7 +147,7 @@ tests/run_gates.sh --quick  # skip the sanitizer build
 ```
 
 That runs the guarantee and formatting checks, builds with
-`-DAUDIO_TO_TEXT_WARNINGS_AS_ERRORS=ON`, runs the tests, and runs the
+`-DECO_ESCRITO_WARNINGS_AS_ERRORS=ON`, runs the tests, and runs the
 sanitizers. See [QUALITY_GATES.md](QUALITY_GATES.md).
 
 ## Sanitizer build
@@ -158,14 +158,14 @@ performance:
 ```bash
 cmake -S . -B build-sanitize \
   -DCMAKE_BUILD_TYPE=Debug \
-  -DAUDIO_TO_TEXT_ENABLE_SANITIZERS=ON
+  -DECO_ESCRITO_ENABLE_SANITIZERS=ON
 cmake --build build-sanitize --parallel
 ```
 
 Run the CLI worker under AddressSanitizer and UndefinedBehaviorSanitizer:
 
 ```bash
-ASAN_OPTIONS=detect_leaks=1 ./build-sanitize/audio_to_text_cli \
+ASAN_OPTIONS=detect_leaks=1 ./build-sanitize/eco_escrito_cli \
   models/ggml-small.en.bin --threads 2
 ```
 

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Eco-escrito
+GenericName=Voice Typing and Pronunciation
+Comment=Speak clearly, and keep what you say. Works offline.
+Exec=eco_escrito
+Icon=eco-escrito
+Terminal=false
+Categories=AudioVideo;Recorder;
+Keywords=speech;voice;typing;dictation;transcription;pronunciation;practice;english;offline;whisper;
+StartupNotify=true

@@ -13,7 +13,7 @@
     base.en (default), small.en, tiny.en, medium.en or large-v3.
 
 .PARAMETER Destination
-    Where to put it. Defaults to %LOCALAPPDATA%\audio-to-text\models, which is
+    Where to put it. Defaults to %LOCALAPPDATA%\eco-escrito\models, which is
     one of the directories the application accepts a model from.
 
 .EXAMPLE
@@ -36,7 +36,7 @@ if (-not $Destination) {
     if (-not $env:LOCALAPPDATA) {
         throw 'LOCALAPPDATA is not set. Pass -Destination to say where the model should go.'
     }
-    $Destination = Join-Path $env:LOCALAPPDATA 'audio-to-text\models'
+    $Destination = Join-Path $env:LOCALAPPDATA 'eco-escrito\models'
 }
 
 New-Item -ItemType Directory -Force -Path $Destination | Out-Null
@@ -81,4 +81,4 @@ Write-Host ''
 Write-Host 'Record that checksum now and compare it later to detect a changed file.'
 Write-Host ''
 Write-Host 'Verify it loads:'
-Write-Host "  audio_to_text_cli.exe `"$file`" --model-dir `"$Destination`" --version"
+Write-Host "  eco_escrito_cli.exe `"$file`" --model-dir `"$Destination`" --version"

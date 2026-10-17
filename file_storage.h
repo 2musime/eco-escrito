@@ -33,6 +33,20 @@
 
 namespace fs = std::filesystem;
 
+// The application was called Audio to Text before it became Eco-escrito, and
+// kept its data under audio-to-text. The first time the new directory is asked
+// for, the old one is moved to it so recordings, transcripts and models survive
+// the rename. If the move fails the old directory is used as it stands, which is
+// better than silently starting empty.
+inline fs::path adopt_legacy_data_directory(const fs::path& current, const fs::path& legacy) {
+    std::error_code error;
+    if (fs::exists(current, error) || !fs::is_directory(legacy, error)) {
+        return current;
+    }
+    fs::rename(legacy, current, error);
+    return error ? legacy : current;
+}
+
 // Files are written only inside a directory the application owns.
 inline fs::path application_data_directory() {
 #if defined(_WIN32)
@@ -41,19 +55,24 @@ inline fs::path application_data_directory() {
     // which is what recordings are: large, private, and machine-local.
     const wchar_t* local_app_data = ::_wgetenv(L"LOCALAPPDATA");
     if (local_app_data != nullptr && local_app_data[0] != L'\0') {
-        return fs::path(local_app_data) / L"audio-to-text";
+        return adopt_legacy_data_directory(fs::path(local_app_data) / L"eco-escrito",
+                                           fs::path(local_app_data) / L"audio-to-text");
     }
-    return fs::current_path() / L".audio-to-text";
+    return adopt_legacy_data_directory(fs::current_path() / L".eco-escrito",
+                                       fs::current_path() / L".audio-to-text");
 #else
     const char* data_home = std::getenv("XDG_DATA_HOME");
-    if (data_home != nullptr && data_home[0] == '/') {
-        return fs::path(data_home) / "audio-to-text";
-    }
     const char* home = std::getenv("HOME");
-    if (home != nullptr && home[0] == '/') {
-        return fs::path(home) / ".local" / "share" / "audio-to-text";
+    if (data_home != nullptr && data_home[0] == '/') {
+        return adopt_legacy_data_directory(fs::path(data_home) / "eco-escrito",
+                                           fs::path(data_home) / "audio-to-text");
     }
-    return fs::current_path() / ".audio-to-text";
+    if (home != nullptr && home[0] == '/') {
+        const fs::path share = fs::path(home) / ".local" / "share";
+        return adopt_legacy_data_directory(share / "eco-escrito", share / "audio-to-text");
+    }
+    return adopt_legacy_data_directory(fs::current_path() / ".eco-escrito",
+                                       fs::current_path() / ".audio-to-text");
 #endif
 }
 

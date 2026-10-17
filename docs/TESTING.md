@@ -16,8 +16,8 @@ Three suites, registered with CTest:
 
 | Suite | Binary | Covers |
 |---|---|---|
-| `unit` | `audio_to_text_unit_tests` | audio, WAV, storage and model logic |
-| `gui` | `audio_to_text_gui_tests` | state transitions and partial-text merging |
+| `unit` | `eco_escrito_unit_tests` | audio, WAV, storage and model logic |
+| `gui` | `eco_escrito_gui_tests` | state transitions and partial-text merging |
 | `cli` | `tests/cli_tests.sh` | argument handling, shutdown, reporting protocol |
 
 The `cli` suite needs `models/ggml-base.en.bin`. It skips with a message rather
@@ -82,10 +82,10 @@ project root from `$0` and works from any working directory.
 ## Sanitizers
 
 ```bash
-cmake -S . -B build-sanitize -DCMAKE_BUILD_TYPE=Debug -DAUDIO_TO_TEXT_ENABLE_SANITIZERS=ON
+cmake -S . -B build-sanitize -DCMAKE_BUILD_TYPE=Debug -DECO_ESCRITO_ENABLE_SANITIZERS=ON
 cmake --build build-sanitize --parallel
-./build-sanitize/audio_to_text_unit_tests
-QT_QPA_PLATFORM=offscreen ./build-sanitize/audio_to_text_gui_tests
+./build-sanitize/eco_escrito_unit_tests
+QT_QPA_PLATFORM=offscreen ./build-sanitize/eco_escrito_gui_tests
 ```
 
 Both suites pass clean under AddressSanitizer and UndefinedBehaviorSanitizer.

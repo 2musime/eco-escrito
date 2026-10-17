@@ -7,10 +7,10 @@ uploaded.
 Read the notice from either interface:
 
 ```bash
-./build-release/audio_to_text_cli --privacy
+./build-release/eco_escrito_cli --privacy
 ```
 
-In the GUI, the **Privacy** button shows the same information together with the
+In the GUI, **Help > Privacy** shows the same information together with the
 directory currently in use.
 
 ## No network access
@@ -22,7 +22,7 @@ This is checked, not asserted.
 the worker links no TLS, DNS or HTTP library:
 
 ```bash
-nm -D --undefined-only build-release/audio_to_text_cli | awk '{print $2}' \
+nm -D --undefined-only build-release/eco_escrito_cli | awk '{print $2}' \
   | grep -vE '^_Z' | grep -xE "socket|connect|bind|send|recv|getaddrinfo"
 ```
 
@@ -35,7 +35,7 @@ machinery and have nothing to do with sockets. Excluding mangled C++ names
 network namespace whose only interface is a downed loopback:
 
 ```bash
-unshare -rn -- ./build-release/audio_to_text_cli \
+unshare -rn -- ./build-release/eco_escrito_cli \
   --benchmark --input speech.wav models/ggml-base.en.bin
 ```
 
@@ -44,6 +44,15 @@ The GUI also starts and runs normally in that namespace.
 Models are the one thing that ever comes from the network, and only when you
 download them yourself with the vendored script. See
 [MODEL_VALIDATION.md](MODEL_VALIDATION.md).
+
+### Links to the author and the project
+
+The footer's **Star us on GitHub**, and the links in **Help > About**, point
+at GitHub and Instagram. Clicking one asks the desktop to
+open that address in your web browser; the browser makes the connection, not
+Eco-escrito. Nothing is fetched to show them, and nothing happens unless you
+click. The addresses are kept with the project's other metadata in
+`CMakeLists.txt`, and the guarantees gate still finds no URL in the sources.
 
 ## What is written, and where
 
@@ -78,9 +87,9 @@ timings, never audio or transcribed words.
 | Control | CLI | GUI |
 |---|---|---|
 | Show the privacy notice | `--privacy` | **Privacy** button |
-| Transcribe without keeping audio | `--no-retain-audio` | **Keep audio files** checkbox |
+| Transcribe without keeping audio | `--no-retain-audio` | **Keep the recording** checkbox, off |
 | Transcribe without saving text | `--no-retain-transcript` | not exposed |
-| Delete everything stored | `--delete-recordings` | **Delete recordings** button |
+| Delete everything stored | `--delete-recordings` | **Delete Everything...** in My Words |
 
 Turning off audio retention still produces a transcript; only the WAV files are
 skipped. Completion is keyed off the transcription itself rather than off a file

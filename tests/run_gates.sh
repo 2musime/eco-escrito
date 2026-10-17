@@ -33,8 +33,8 @@ record $? "check_style.sh"
 step "Build with warnings as errors"
 cmake -S . -B build-release \
     -DCMAKE_BUILD_TYPE=Release \
-    -DAUDIO_TO_TEXT_ENABLE_WARNINGS=ON \
-    -DAUDIO_TO_TEXT_WARNINGS_AS_ERRORS=ON > /dev/null
+    -DECO_ESCRITO_ENABLE_WARNINGS=ON \
+    -DECO_ESCRITO_WARNINGS_AS_ERRORS=ON > /dev/null
 cmake --build build-release $BUILD_CONFIG --parallel "$(cpu_count)" 2>&1 \
     | grep -E "warning:|error:|warning C[0-9]|error C[0-9]" | grep -v third_party | head -20
 build_status=${PIPESTATUS[0]}
@@ -61,14 +61,14 @@ elif [ "$QUICK" = "0" ]; then
     step "Sanitizers"
     cmake -S . -B build-sanitize \
         -DCMAKE_BUILD_TYPE=Debug \
-        -DAUDIO_TO_TEXT_ENABLE_SANITIZERS=ON > /dev/null
+        -DECO_ESCRITO_ENABLE_SANITIZERS=ON > /dev/null
     cmake --build build-sanitize --parallel "$(cpu_count)" \
-        --target audio_to_text_unit_tests audio_to_text_gui_tests > /dev/null 2>&1
-    ASAN_OPTIONS=detect_leaks=1 ./build-sanitize/audio_to_text_unit_tests | tail -1
+        --target eco_escrito_unit_tests eco_escrito_gui_tests > /dev/null 2>&1
+    ASAN_OPTIONS=detect_leaks=1 ./build-sanitize/eco_escrito_unit_tests | tail -1
     record ${PIPESTATUS[0]} "unit tests under sanitizers"
     # Qt's own allocations at exit are not this project's leaks.
     QT_QPA_PLATFORM=offscreen ASAN_OPTIONS=detect_leaks=0 \
-        ./build-sanitize/audio_to_text_gui_tests | tail -1
+        ./build-sanitize/eco_escrito_gui_tests | tail -1
     record ${PIPESTATUS[0]} "interface tests under sanitizers"
 else
     printf '\n(skipping sanitizers: --quick)\n'

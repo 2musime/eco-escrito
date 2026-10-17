@@ -1,7 +1,15 @@
 # Pronunciation practice
 
-The Practice screen is for someone learning to pronounce English. They read a
-known sentence aloud, and the result shows, word by word, what came through.
+The Practise screen is for anyone learning to pronounce English, at any age:
+a child learning sounds, an adult preparing for an interview, someone new to the
+language. They read a known sentence aloud, and the result shows, word by word,
+what came through.
+
+It coaches rather than marks. The result says how many words were clear, then
+names the one word to try next ("7 of 8 words were clear. Try “thought”
+again."), and every hint is phrased as what *we* heard, not what *you* got
+wrong. Children and nervous learners give up when they feel graded; they keep
+going when they are told what to do next.
 
 ## The problem it works against
 
@@ -10,12 +18,12 @@ often write "I think so", because that is the likelier sentence. For dictation
 that is a feature. For a learner it hides the very mistake they need to see.
 
 Nothing in Whisper turns this off. Practice mode pushes back in three ways, and
-is honest on screen about the rest.
+is honest about the rest in the tooltip on the colour key under each result.
 
 1. **Comparison with the target.** The learner's sentence is known, so every
    word Whisper wrote differently is shown, with what it heard instead.
 2. **Confidence.** Whisper reports a probability for every token. A word it
-   matched but was unsure of is marked **check**, even though the text agrees.
+   matched but was unsure of is marked **say again**, even though the text agrees.
    A "corrected" word usually lands here.
 3. **Literal decoding.** The worker's `--practice` flag sets `no_context`, so
    earlier words do not steer the guess, and turns off temperature fallback, so
@@ -23,13 +31,13 @@ is honest on screen about the rest.
 
 ## Marks
 
-| Mark | Meaning |
-|---|---|
-| right | heard as written, with confidence |
-| changed | something else was heard in its place; both words are shown |
-| missed | in the sentence, not heard at all |
-| check | matched, but Whisper was below 50% sure of it |
-| extra | heard, but not in the sentence |
+| Mark | Meaning | Hint shown |
+|---|---|---|
+| clear | heard as written, with confidence | none |
+| heard differently | something else was heard in its place; both words are shown | We heard “sink” instead of “think” |
+| not heard | in the sentence, not heard at all | We didn't hear “road” |
+| say again | matched, but Whisper was below 50% sure of it | Say “lorry” again, slowly |
+| extra | heard, but not in the sentence | We also heard “the” |
 
 Words are compared after folding case, dropping apostrophes and splitting on
 punctuation and hyphens, so "Don't" matches "dont" and punctuation never counts
@@ -68,7 +76,7 @@ the text but do not lower a word's probability.
 To see it without the interface:
 
 ```bash
-./build-release/audio_to_text_cli --benchmark --input speech.wav --threads 8 \
+./build-release/eco_escrito_cli --benchmark --input speech.wav --threads 8 \
     --practice models/ggml-small.en.bin | grep WORDS
 ```
 
@@ -77,8 +85,9 @@ To see it without the interface:
 - Whisper still hears words, not sounds. A wrong vowel inside a word it
   recognises with confidence will be marked right. Catching that needs a
   phoneme recogniser, which this application does not have yet.
-- `small.en` hears noticeably better than `base.en` on the same recording. The
-  model is the one chosen on the Recording screen.
+- **More accurate** (`small.en`) hears noticeably better than **Faster**
+  (`base.en`) on the same recording. Practise uses whichever is chosen on Write
+  by Voice.
 - English only.
 
 The logic lives in `practice.h` and is covered by the unit tests.
