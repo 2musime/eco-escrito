@@ -8,10 +8,10 @@ can always identify itself:
 
 ```bash
 eco_escrito_cli --version
-# eco_escrito 1.2.0 (404259b, Release)
+# eco_escrito 1.3.0 (f9d338a, Release)
 ```
 
-The GUI shows the same under **About**, and in its title bar.
+The GUI shows the same under **Help > About**.
 
 ## Checklist
 
@@ -48,7 +48,9 @@ and this file match any version on purpose. Confirm with:
 grep -rn "eco-escrito-[0-9]" README.md INSTALL.md docs/ | grep -v '\*'
 ```
 
-Anything it prints is a hard-coded version that will go stale.
+Anything it prints is a hard-coded version that will go stale. The one
+deliberate exception is the version badge at the top of `README.md`, which
+must be bumped by hand.
 
 **5. A fresh clone builds**
 
@@ -103,8 +105,8 @@ artifacts are different versions is worse than one that ships Linux only.
 **10. Tag and publish**
 
 ```bash
-git tag -a v.1.2.0 -m "1.2.0"
-git push origin v.1.2.0
+git tag -a v.1.3.0 -m "1.3.0"
+git push origin v.1.3.0
 ```
 
 Attach every artifact to one GitHub release, so a single version number covers

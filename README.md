@@ -10,12 +10,14 @@ in English, for now.
 The name is the idea: *eco* (echo) and *escrito* (written), so your voice,
 echoed in writing.
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![Platforms](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-lightgrey)
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C)
 ![Qt 6](https://img.shields.io/badge/Qt-6-41CD52)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 [![GitHub stars](https://img.shields.io/github/stars/2musime/eco-escrito?style=social)](https://github.com/2musime/eco-escrito)
+
+![The Eco-escrito welcome page: "Speak clearly, and keep what you say", with Write by Voice and Practise buttons](docs/images/welcome.png)
 
 ## Table of contents
 
