@@ -69,7 +69,7 @@ when it returns `EINTR`.
 Verify with:
 
 ```bash
-./build-release/eco_escrito_cli models/ggml-base.en.bin
+./build-release/eco_escrito_cli models/ggml-small.en.bin
 # press Ctrl+C at the prompt
 ```
 
@@ -95,5 +95,5 @@ Expected output is `Shutting down.` and exit status `0`.
 cmake -S . -B build-sanitize -DCMAKE_BUILD_TYPE=Debug -DECO_ESCRITO_ENABLE_SANITIZERS=ON
 cmake --build build-sanitize --parallel
 printf 'q\n' | ASAN_OPTIONS=detect_leaks=1 \
-  ./build-sanitize/eco_escrito_cli models/ggml-base.en.bin
+  ./build-sanitize/eco_escrito_cli models/ggml-small.en.bin
 ```

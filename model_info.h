@@ -14,7 +14,7 @@
 // Models must resolve inside an approved root; symbolic links are followed but
 // the destination still has to land inside one of those roots.
 //
-// A bare file name -- "ggml-base.en.bin", with no directory in it -- is looked
+// A bare file name -- "ggml-small.en.bin", with no directory in it -- is looked
 // for in each root in turn. Without that, the only way to name a model is a
 // path relative to the working directory, and nothing sets a useful working
 // directory when a program is started from a menu entry, a desktop shortcut or

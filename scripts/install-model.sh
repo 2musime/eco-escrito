@@ -8,7 +8,7 @@ usage() {
     cat <<USAGE
 Usage: install-model.sh [MODEL] [--system|--user|--dir PATH]
 
-  MODEL     base.en (default), small.en, tiny.en, medium.en, large-v3
+  MODEL     small.en (default), base.en, tiny.en, medium.en, large-v3
   --user    install to \$XDG_DATA_HOME/eco-escrito/models  (default)
   --system  install to /usr/share/eco-escrito/models       (needs root)
   --dir P   install to P
@@ -21,7 +21,7 @@ Record the checksum after downloading and verify it later:
 USAGE
 }
 
-MODEL="base.en"
+MODEL="small.en"
 DEST=""
 while [ $# -gt 0 ]; do
     case "$1" in

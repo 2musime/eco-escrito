@@ -143,7 +143,7 @@ system default and says so.
 Select one by index, or omit `--device` for the system default:
 
 ```bash
-./build-release/eco_escrito_cli models/ggml-base.en.bin --device 1
+./build-release/eco_escrito_cli models/ggml-small.en.bin --device 1
 ```
 
 Devices are enumerated and opened from the same `ma_context`, so the identifier
@@ -168,7 +168,7 @@ reports can differ from the one that was requested.
 ./build-release/eco_escrito_cli --list-devices
 
 # Out-of-range index
-./build-release/eco_escrito_cli models/ggml-base.en.bin --device 99
+./build-release/eco_escrito_cli models/ggml-small.en.bin --device 99
 # ERROR|MICROPHONE|Capture device 99 does not exist; 2 device(s) are available.
 ```
 

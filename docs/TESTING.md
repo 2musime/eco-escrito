@@ -20,7 +20,7 @@ Three suites, registered with CTest:
 | `gui` | `eco_escrito_gui_tests` | state transitions and partial-text merging |
 | `cli` | `tests/cli_tests.sh` | argument handling, shutdown, reporting protocol |
 
-The `cli` suite needs `models/ggml-base.en.bin`. It skips with a message rather
+The `cli` suite needs `models/ggml-small.en.bin`. It skips with a message rather
 than failing when the model is absent, so a fresh checkout does not report a
 false failure.
 

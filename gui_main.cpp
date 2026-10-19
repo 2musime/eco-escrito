@@ -233,6 +233,8 @@ public:
         model_selector_ = new QComboBox(recorder);
         model_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
         model_selector_->setAccessibleName("Speech model");
+        // A choice of one is no choice; the footer still names the model.
+        model_selector_->setVisible(catalogue_models().size() > 1);
 
         device_selector_ = new QComboBox(recorder);
         device_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
@@ -1601,13 +1603,13 @@ private:
             return message + " Check that a microphone is plugged in and that Eco-escrito may use it.";
         }
         if (category == "MODEL") {
-            return message + " Choose another model, or add this one again (see INSTALL.md).";
+            return message + " Add the speech model again (see INSTALL.md).";
         }
         if (category == "RECORDING") {
             return message + " Try again, a little closer to the microphone.";
         }
         if (category == "TRANSCRIPTION") {
-            return message + " Choose Faster, or speak for a shorter time.";
+            return message + " Try speaking for a shorter time.";
         }
         if (category == "FILE_SAVING") {
             return message + " Check that the disk is not full.";
@@ -1781,8 +1783,8 @@ private:
         QMainWindow::changeEvent(event);
     }
 
-    // Both models the packages install. One not on this computer -- a build
-    // made without them, or a file since removed -- is listed but greyed out,
+    // The models the packages install. One not on this computer -- a build
+    // made without it, or a file since removed -- is listed but greyed out,
     // its tooltip saying how to add it, so choosing a model can never end in
     // "file not found". The item's data is a name, not a path: the
     // worker searches the same directories for it, which is the only thing

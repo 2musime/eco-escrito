@@ -9,7 +9,7 @@ now.
 The name is the idea: *eco* (echo) and *escrito* (written), so your voice,
 echoed in writing.
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.0-blue)
 ![Platforms](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-lightgrey)
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C)
 ![Qt 6](https://img.shields.io/badge/Qt-6-41CD52)
@@ -46,7 +46,7 @@ contains no network code. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 **Windows:** download the installer from the
 [latest release](https://github.com/2musime/eco-escrito/releases/latest), run
-it, and open **Eco-escrito** from the Start Menu. Both speech models are included.
+it, and open **Eco-escrito** from the Start Menu. The speech model is included.
 
 **Fedora:**
 
@@ -54,7 +54,7 @@ it, and open **Eco-escrito** from the Start Menu. Both speech models are include
 sudo dnf install ./eco-escrito-*-Linux.rpm
 ```
 
-Both speech models are included. Requirements, upgrading and uninstalling: [INSTALL.md](INSTALL.md).
+The speech model is included. Requirements, upgrading and uninstalling: [INSTALL.md](INSTALL.md).
 To build it yourself: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Get started
