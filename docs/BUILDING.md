@@ -142,7 +142,7 @@ copies the Qt libraries and the platform plugin beside it. If `windeployqt`
 cannot be found, CMake says so at configure time and the installed application
 will not start.
 
-To produce the release artifacts, with the model inside them:
+To produce the release artifacts, with both models inside them:
 
 ```bat
 cmake -S . -B build -DCMAKE_PREFIX_PATH="C:/Qt/6.x.x/msvc2022_64" ^
@@ -151,9 +151,10 @@ cmake --build build --config Release --parallel
 cpack -C Release
 ```
 
-`ECO_ESCRITO_BUNDLE_MODEL` downloads `base.en` once per build tree, about
-142 MB, and checks it against the hash pinned in `CMakeLists.txt`. It lands in
-`models` beside the executables, which the worker accepts as a model directory.
+`ECO_ESCRITO_BUNDLE_MODEL` downloads `base.en` and `small.en` once per build
+tree, about 600 MB, and checks each against the hash pinned in `CMakeLists.txt`.
+They land in `models` beside the executables on Windows, and in
+`share/eco-escrito/models` on Linux; the worker searches both.
 Leave the option off for ordinary development builds; nobody compiling a change
 should have to wait for a download.
 

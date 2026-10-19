@@ -50,13 +50,18 @@ option(ECO_ESCRITO_ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
 # Applied only to this project's targets; vendored Whisper is not held to it.
 option(ECO_ESCRITO_WARNINGS_AS_ERRORS "Treat this project's warnings as errors" OFF)
 
-# Puts base.en inside the package, so the application works the moment it is
-# installed. Off by default: it makes configuring the project download 142 MB,
-# which nobody building from source should be made to do without asking.
-option(ECO_ESCRITO_BUNDLE_MODEL "Ship base.en inside the package" OFF)
+# Puts both models the interface offers -- base.en ("Faster") and small.en
+# ("More accurate") -- inside the package, so installing the application
+# installs them too and either can be chosen at once. Off by default: it makes
+# configuring the project download about 600 MB, which nobody building from
+# source should be made to do without asking. Release packages turn it on.
+option(ECO_ESCRITO_BUNDLE_MODEL "Ship base.en and small.en inside the package" OFF)
 set(ECO_ESCRITO_BUNDLED_MODEL_SHA256
     "a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002"
-    CACHE STRING "Expected SHA-256 of the bundled model")
+    CACHE STRING "Expected SHA-256 of the bundled base.en model")
+set(ECO_ESCRITO_BUNDLED_SMALL_MODEL_SHA256
+    "c6138d6d58ecc8322097e0f987c32f1be8bb0a18532a3f88f734d1bbf9c41e5d"
+    CACHE STRING "Expected SHA-256 of the bundled small.en model")
 
 set(WHISPER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(WHISPER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -238,40 +243,39 @@ if(ECO_ESCRITO_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 # --------------------------------------------------------------- bundled model
-# The worker accepts a model from a "models" directory beside the executable, so
-# a package that includes one puts it there and nothing else has to change.
+# The worker looks for a model in a "models" directory beside the executable
+# and, on Linux, in <prefix>/share/eco-escrito/models, so a package that
+# includes them puts them there and nothing else has to change.
 if(ECO_ESCRITO_BUNDLE_MODEL)
-    if(NOT WIN32)
-        message(FATAL_ERROR
-            "ECO_ESCRITO_BUNDLE_MODEL is for the Windows packages. On Linux "
-            "the model is a separate download and would land in /usr/bin/models, "
-            "which is not a sane place for 142 MB of weights.")
-    endif()
+    set(ECO_ESCRITO_BUNDLED_MODELS "")
 
-    set(ECO_ESCRITO_BUNDLED_MODEL
-        "${CMAKE_BINARY_DIR}/bundled-model/ggml-base.en.bin")
-
-    # Kept out of git and downloaded once per build tree. The hash is the one
-    # recorded in docs/MODEL_VALIDATION.md, which is an observation rather than
-    # a published reference -- upstream publishes no checksum list. That is the
-    # point: if the file behind that URL ever changes, this build stops instead
-    # of quietly shipping different weights.
-    if(NOT EXISTS "${ECO_ESCRITO_BUNDLED_MODEL}")
-        message(STATUS "Downloading base.en to bundle (about 142 MB)...")
-        file(DOWNLOAD
-            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
-            "${ECO_ESCRITO_BUNDLED_MODEL}"
-            EXPECTED_HASH "SHA256=${ECO_ESCRITO_BUNDLED_MODEL_SHA256}"
-            SHOW_PROGRESS
-            STATUS ECO_ESCRITO_MODEL_STATUS)
-        list(GET ECO_ESCRITO_MODEL_STATUS 0 ECO_ESCRITO_MODEL_CODE)
-        if(NOT ECO_ESCRITO_MODEL_CODE EQUAL 0)
-            list(GET ECO_ESCRITO_MODEL_STATUS 1 ECO_ESCRITO_MODEL_MESSAGE)
-            file(REMOVE "${ECO_ESCRITO_BUNDLED_MODEL}")
-            message(FATAL_ERROR
-                "Could not obtain the model: ${ECO_ESCRITO_MODEL_MESSAGE}")
+    # Kept out of git and downloaded once per build tree. The hashes are the
+    # ones recorded in docs/MODEL_VALIDATION.md, which are observations rather
+    # than a published reference -- upstream publishes no checksum list. That
+    # is the point: if the file behind that URL ever changes, this build stops
+    # instead of quietly shipping different weights.
+    function(eco_escrito_bundle_model name size sha256)
+        set(model "${CMAKE_BINARY_DIR}/bundled-model/ggml-${name}.bin")
+        if(NOT EXISTS "${model}")
+            message(STATUS "Downloading ${name} to bundle (about ${size})...")
+            file(DOWNLOAD
+                "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-${name}.bin"
+                "${model}"
+                EXPECTED_HASH "SHA256=${sha256}"
+                SHOW_PROGRESS
+                STATUS status)
+            list(GET status 0 code)
+            if(NOT code EQUAL 0)
+                list(GET status 1 reason)
+                file(REMOVE "${model}")
+                message(FATAL_ERROR "Could not obtain the ${name} model: ${reason}")
+            endif()
         endif()
-    endif()
+        set(ECO_ESCRITO_BUNDLED_MODELS ${ECO_ESCRITO_BUNDLED_MODELS} "${model}" PARENT_SCOPE)
+    endfunction()
+
+    eco_escrito_bundle_model(base.en "142 MB" "${ECO_ESCRITO_BUNDLED_MODEL_SHA256}")
+    eco_escrito_bundle_model(small.en "466 MB" "${ECO_ESCRITO_BUNDLED_SMALL_MODEL_SHA256}")
 endif()
 
 # ----------------------------------------------------------------- installation
@@ -298,16 +302,6 @@ endif()
 if(WIN32)
     install(FILES scripts/install-model.ps1
         DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-    if(ECO_ESCRITO_BUNDLE_MODEL)
-        install(FILES "${ECO_ESCRITO_BUNDLED_MODEL}"
-            DESTINATION ${CMAKE_INSTALL_BINDIR}/models)
-        # MIT permits redistributing the weights and requires the notice to
-        # travel with them.
-        install(FILES third_party/whisper.cpp/LICENSE
-            DESTINATION ${CMAKE_INSTALL_BINDIR}/models
-            RENAME LICENSE-whisper.cpp.txt)
-    endif()
 else()
     install(FILES packaging/eco-escrito.desktop
         DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
@@ -322,6 +316,24 @@ else()
     install(PROGRAMS scripts/install-model.sh
         DESTINATION ${CMAKE_INSTALL_BINDIR}
         RENAME eco-escrito-install-model)
+endif()
+
+# Beside the executable on Windows, where nothing else is searched without a
+# working directory; under share on Linux, which is where 600 MB of data
+# belongs and where install-model.sh --system puts a model too.
+if(ECO_ESCRITO_BUNDLE_MODEL)
+    if(WIN32)
+        set(ECO_ESCRITO_MODEL_DESTINATION ${CMAKE_INSTALL_BINDIR}/models)
+    else()
+        set(ECO_ESCRITO_MODEL_DESTINATION ${CMAKE_INSTALL_DATADIR}/eco-escrito/models)
+    endif()
+    install(FILES ${ECO_ESCRITO_BUNDLED_MODELS}
+        DESTINATION ${ECO_ESCRITO_MODEL_DESTINATION})
+    # MIT permits redistributing the weights and requires the notice to travel
+    # with them.
+    install(FILES third_party/whisper.cpp/LICENSE
+        DESTINATION ${ECO_ESCRITO_MODEL_DESTINATION}
+        RENAME LICENSE-whisper.cpp.txt)
 endif()
 
 # Qt's own libraries and its platform plugin are not covered by install(TARGETS)
@@ -415,8 +427,8 @@ else()
 
     set(CPACK_RPM_PACKAGE_LICENSE "MIT")
     set(CPACK_RPM_PACKAGE_GROUP "Applications/Multimedia")
-    # Qt comes from the distribution; the model is downloaded separately and is
-    # deliberately not packaged, being hundreds of megabytes.
+    # Qt comes from the distribution. The models come with the package when
+    # ECO_ESCRITO_BUNDLE_MODEL is on, as it is for every release.
     set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtbase-gui")
     set(CPACK_RPM_PACKAGE_AUTOREQPROV "no")
     # The package was called audio-to-text before the rename; this lets dnf

@@ -1,6 +1,6 @@
 #pragma once
 
-// The Whisper models the installers can fetch, and the directories a model is
+// The Whisper models the interface offers, and the directories a model is
 // looked for in. The interface and the worker both read this, so a model the
 // interface offers is always one the worker will find.
 
@@ -16,20 +16,15 @@ struct CatalogueModel {
     const char* description;  // one line on when to choose it
 };
 
-// Fastest first. Every name here is one scripts/install-model.sh and
-// scripts/install-model.ps1 accept.
+// Fastest first. The release packages install both (ECO_ESCRITO_BUNDLE_MODEL
+// in CMakeLists.txt), and each name is one the install scripts accept, for a
+// build made without them.
 inline const std::vector<CatalogueModel>& catalogue_models() {
     static const std::vector<CatalogueModel> models{
-        {"tiny.en", "ggml-tiny.en.bin", "Fastest",
-         "Quickest, least accurate. For slow computers. 75 MB."},
         {"base.en", "ggml-base.en.bin", "Faster",
-         "Suits most people. 142 MB."},
+         "Suits most people."},
         {"small.en", "ggml-small.en.bin", "More accurate",
-         "About 3.5 times slower than Faster. 466 MB."},
-        {"medium.en", "ggml-medium.en.bin", "Most accurate",
-         "Slow; best on a fast computer. 1.5 GB."},
-        {"large-v3", "ggml-large-v3.bin", "Largest",
-         "Slowest, and needs about 4 GB of memory. 3.1 GB."},
+         "About 3.5 times slower than Faster."},
     };
     return models;
 }

@@ -63,10 +63,15 @@ cmake --build /tmp/release-check/build --parallel
 **6. Packages build**
 
 ```bash
-cmake --build build-release --target package
+cmake --preset linux-package
+cmake --build --preset linux-package
+cd build-package && cpack
 ```
 
-Produces `eco-escrito-<version>-Linux.rpm` and a `.tar.gz`.
+Produces `eco-escrito-<version>-Linux.rpm` and a `.tar.gz`, each carrying
+`base.en` and `small.en` in `/usr/share/eco-escrito/models`. The preset turns on
+`ECO_ESCRITO_BUNDLE_MODEL`; a package built without it has no model and
+offers neither choice.
 
 **7. The package installs on a clean system** with no build tools present, and
 the installed binaries run. See below.
@@ -136,10 +141,10 @@ formats and says which generator it skipped.
 | Start Menu shortcut (Windows) | yes | created by the NSIS installer |
 | Qt 6 (Windows) | yes | no distribution to provide it; `windeployqt` copies it in at install time |
 | `eco-escrito-install-model`, `install-model.ps1` | yes | fetches a model after installation |
-| Whisper models | **Windows only** | `base.en` ships in the Windows package, which has no distribution to fetch one from; the Fedora package still downloads it |
+| Whisper models | yes | `base.en` and `small.en`, the two the interface offers, so installing the application is all it takes to use either; checked against the hashes pinned in `CMakeLists.txt` |
 
-Models are deliberately excluded. Packaging one would make the download implicit
-and inflate the package by an order of magnitude.
+The models make each package about 600 MB. That is the price of a program that
+works the moment it is installed, offline, with nothing further to fetch.
 
 ## Verifying a clean installation
 
@@ -182,7 +187,7 @@ Confirm before shipping:
 ```bash
 sudo dnf install ./eco-escrito-*-Linux.rpm
 eco_escrito_cli --version
-eco-escrito-install-model base.en --user
+ls /usr/share/eco-escrito/models    # ggml-base.en.bin and ggml-small.en.bin
 eco_escrito_cli --list-devices
 ```
 
