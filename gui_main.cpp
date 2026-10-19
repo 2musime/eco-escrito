@@ -1781,9 +1781,10 @@ private:
         QMainWindow::changeEvent(event);
     }
 
-    // Every model the installers can fetch. One not on this computer is listed
-    // but greyed out, its tooltip saying how to add it, so choosing a model can
-    // never end in "file not found". The item's data is a name, not a path: the
+    // Both models the packages install. One not on this computer -- a build
+    // made without them, or a file since removed -- is listed but greyed out,
+    // its tooltip saying how to add it, so choosing a model can never end in
+    // "file not found". The item's data is a name, not a path: the
     // worker searches the same directories for it, which is the only thing
     // that works when the application is started from a menu entry and
     // inherits no useful working directory.

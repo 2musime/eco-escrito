@@ -17,6 +17,13 @@
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     },
     {
+      "name": "linux-package",
+      "displayName": "Linux Release package (both models bundled)",
+      "inherits": "linux-release",
+      "binaryDir": "${sourceDir}/build-package",
+      "cacheVariables": { "ECO_ESCRITO_BUNDLE_MODEL": "ON" }
+    },
+    {
       "name": "linux-debug",
       "displayName": "Linux Debug",
       "inherits": "linux-base",
@@ -56,6 +63,7 @@
   ],
   "buildPresets": [
     { "name": "linux-release", "configurePreset": "linux-release" },
+    { "name": "linux-package", "configurePreset": "linux-package" },
     { "name": "linux-debug", "configurePreset": "linux-debug" },
     { "name": "x64-debug", "configurePreset": "x64-debug" },
     { "name": "x64-release", "configurePreset": "x64-release" }

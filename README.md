@@ -46,16 +46,15 @@ contains no network code. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 **Windows:** download the installer from the
 [latest release](https://github.com/2musime/eco-escrito/releases/latest), run
-it, and open **Eco-escrito** from the Start Menu. The speech model is included.
+it, and open **Eco-escrito** from the Start Menu. Both speech models are included.
 
 **Fedora:**
 
 ```bash
 sudo dnf install ./eco-escrito-*-Linux.rpm
-eco-escrito-install-model base.en --user
 ```
 
-Requirements, other models, upgrading and uninstalling: [INSTALL.md](INSTALL.md).
+Both speech models are included. Requirements, upgrading and uninstalling: [INSTALL.md](INSTALL.md).
 To build it yourself: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Get started

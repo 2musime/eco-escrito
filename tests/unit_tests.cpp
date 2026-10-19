@@ -983,7 +983,7 @@ void test_model_catalogue() {
     harness::begin("Model catalogue");
 
     const std::vector<CatalogueModel>& models = catalogue_models();
-    CHECK("every installable model is offered", models.size() == 5);
+    CHECK("both bundled models are offered", models.size() == 2);
     bool default_listed = false;
     bool files_match_names = true;
     for (const CatalogueModel& model : models) {

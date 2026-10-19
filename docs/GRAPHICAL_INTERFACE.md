@@ -50,7 +50,7 @@ footer:
 | Instead of | It says |
 |---|---|
 | Transcripts, Speeches | **My Words** |
-| tiny.en / base.en / small.en / medium.en / large-v3 | **Fastest** / **Faster** / **More accurate** / **Most accurate** / **Largest** |
+| Speed: base.en / Accuracy: small.en | **Faster** / **More accurate** |
 | 15 seconds | **Up to 15 sec** |
 | Keep audio files | **Keep the recording** |
 | Start / Stop Recording | **Start Speaking** / **Stop** |
@@ -177,10 +177,10 @@ put pale text on white.
 `Up to 1 min`, the microphone's name), and each list is sized to its contents.
 The model's real name is in the tooltip and the footer.
 
-**Every model is listed; only installed ones can be chosen.** The model list
-shows all five models the install scripts can fetch. One that is not on this
-computer reads *(not installed)*, is greyed out, and its tooltip gives the
-command that adds it. The list is checked again whenever the window comes back
+**Both models come with the application.** The packages install `base.en`
+(**Faster**) and `small.en` (**More accurate**), so either can be chosen at
+once. In a build made without them, a missing model reads *(not installed)*, is
+greyed out, and its tooltip gives the command that adds it. The list is checked again whenever the window comes back
 into focus and before each recording, so a model installed meanwhile can be
 chosen straight away. If the chosen model disappears, the list falls back to
 **Faster**, then to any installed model.
