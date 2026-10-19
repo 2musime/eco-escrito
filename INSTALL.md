@@ -10,14 +10,9 @@ transcribed on your own machine; nothing is uploaded. See
 sudo dnf install ./eco-escrito-*-Linux.rpm
 ```
 
-The package pulls in `qt6-qtbase-gui` and **includes both speech models**, in
-`/usr/share/eco-escrito/models`. There is nothing else to download: choose
-either one in the application.
-
-| In the application | Model | Size | Use |
-|---|---|---|---|
-| **Faster** | `base.en` | 142 MB | the default; fast, good accuracy |
-| **More accurate** | `small.en` | 466 MB | about 3.5 times slower, better accuracy |
+The package pulls in `qt6-qtbase-gui` and **includes the speech model**,
+`small.en` (466 MB), in `/usr/share/eco-escrito/models`. There is nothing else
+to download.
 
 Then check it works:
 
@@ -32,9 +27,8 @@ The GUI also appears in the desktop menu under Sound &amp; Video.
 ## From a package (Windows)
 
 Run `eco-escrito-<version>-win64.exe` and accept the default location. The
-installer places the program, the Whisper libraries, the Qt libraries **and both
-speech models** (`base.en` for **Faster**, `small.en` for **More accurate**) in
-one directory, installs the Microsoft Visual C++
+installer places the program, the Whisper libraries, the Qt libraries **and the
+`small.en` speech model** in one directory, installs the Microsoft Visual C++
 runtime if the machine lacks it, and adds **Eco-escrito** to the Start Menu and
 the desktop. There is nothing else to download and nothing to configure: open
 it and record.
@@ -45,7 +39,7 @@ SmartScreen shows *"Windows protected your PC"*. Choose **More info**, then
 certificate, and you should be suspicious of any download that asks you to
 bypass the warning -- verify the file came from this project's releases page.
 
-The ZIP is the same files, models included, with no installer and no Start Menu
+The ZIP is the same files, model included, with no installer and no Start Menu
 entry. Unpack it anywhere and run `bin\eco_escrito.exe`. Keep the `models`
 folder beside the executable; that is where it is found.
 
@@ -72,7 +66,7 @@ cd eco-escrito
 sudo dnf install gcc-c++ cmake make qt6-qtbase-devel
 cmake -S . -B build-release
 cmake --build build-release --parallel
-bash scripts/install-model.sh base.en --dir models
+bash scripts/install-model.sh small.en --dir models
 ./build-release/eco_escrito
 ```
 
@@ -82,8 +76,8 @@ bash scripts/install-model.sh base.en --dir models
 |---|---|
 | OS | Fedora Linux or Windows, x86-64 |
 | CPU | Any x86-64 processor, 2+ cores (transcription is CPU only) |
-| Memory | 1 GB free for `base.en`, 1.5 GB for `small.en` |
-| Disk | ~20 MB for the app, plus 142 MB (`base.en`) or 466 MB (`small.en`) |
+| Memory | 1.5 GB free |
+| Disk | ~20 MB for the app, plus 466 MB for the `small.en` model |
 | Audio | Any microphone reachable through PipeWire, PulseAudio or ALSA, or any Windows input device |
 | Network | None after the model is in place |
 
@@ -144,8 +138,7 @@ you. Nothing is left elsewhere.
 ## Known limitations
 
 - x86-64 and CPU only, with no GPU backend.
-- English only: the `base.en` and `small.en` models are the ones offered and
-  tested.
+- English only: `small.en` is the model offered and tested.
   Multilingual models load, but they are untested.
 - Packaged for Fedora (`.rpm`) and Windows (installer). There is no `.deb` or
   Flatpak package.

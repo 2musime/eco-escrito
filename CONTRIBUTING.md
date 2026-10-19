@@ -38,7 +38,7 @@ cd eco-escrito
 sudo dnf install gcc-c++ cmake make qt6-qtbase-devel
 cmake -S . -B build-release
 cmake --build build-release --parallel
-bash scripts/install-model.sh base.en --dir models
+bash scripts/install-model.sh small.en --dir models
 ./build-release/eco_escrito
 ```
 

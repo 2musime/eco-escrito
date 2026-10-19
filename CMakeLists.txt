@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(EcoEscrito
-    VERSION 1.3.0
+    VERSION 1.4.0
     DESCRIPTION "Offline voice typing and English pronunciation practice"
     HOMEPAGE_URL "https://github.com/2musime/eco-escrito"
     LANGUAGES CXX)
@@ -50,15 +50,11 @@ option(ECO_ESCRITO_ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
 # Applied only to this project's targets; vendored Whisper is not held to it.
 option(ECO_ESCRITO_WARNINGS_AS_ERRORS "Treat this project's warnings as errors" OFF)
 
-# Puts both models the interface offers -- base.en ("Faster") and small.en
-# ("More accurate") -- inside the package, so installing the application
-# installs them too and either can be chosen at once. Off by default: it makes
-# configuring the project download about 600 MB, which nobody building from
-# source should be made to do without asking. Release packages turn it on.
-option(ECO_ESCRITO_BUNDLE_MODEL "Ship base.en and small.en inside the package" OFF)
-set(ECO_ESCRITO_BUNDLED_MODEL_SHA256
-    "a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002"
-    CACHE STRING "Expected SHA-256 of the bundled base.en model")
+# Puts small.en, the model the interface uses, inside the package, so
+# installing the application installs it too. Off by default: it makes
+# configuring the project download 466 MB, which nobody building from source
+# should be made to do without asking. Release packages turn it on.
+option(ECO_ESCRITO_BUNDLE_MODEL "Ship small.en inside the package" OFF)
 set(ECO_ESCRITO_BUNDLED_SMALL_MODEL_SHA256
     "c6138d6d58ecc8322097e0f987c32f1be8bb0a18532a3f88f734d1bbf9c41e5d"
     CACHE STRING "Expected SHA-256 of the bundled small.en model")
@@ -249,8 +245,8 @@ endif()
 if(ECO_ESCRITO_BUNDLE_MODEL)
     set(ECO_ESCRITO_BUNDLED_MODELS "")
 
-    # Kept out of git and downloaded once per build tree. The hashes are the
-    # ones recorded in docs/MODEL_VALIDATION.md, which are observations rather
+    # Kept out of git and downloaded once per build tree. The hash is the one
+    # recorded in docs/MODEL_VALIDATION.md, which are observations rather
     # than a published reference -- upstream publishes no checksum list. That
     # is the point: if the file behind that URL ever changes, this build stops
     # instead of quietly shipping different weights.
@@ -274,7 +270,6 @@ if(ECO_ESCRITO_BUNDLE_MODEL)
         set(ECO_ESCRITO_BUNDLED_MODELS ${ECO_ESCRITO_BUNDLED_MODELS} "${model}" PARENT_SCOPE)
     endfunction()
 
-    eco_escrito_bundle_model(base.en "142 MB" "${ECO_ESCRITO_BUNDLED_MODEL_SHA256}")
     eco_escrito_bundle_model(small.en "466 MB" "${ECO_ESCRITO_BUNDLED_SMALL_MODEL_SHA256}")
 endif()
 
@@ -319,7 +314,7 @@ else()
 endif()
 
 # Beside the executable on Windows, where nothing else is searched without a
-# working directory; under share on Linux, which is where 600 MB of data
+# working directory; under share on Linux, which is where 466 MB of data
 # belongs and where install-model.sh --system puts a model too.
 if(ECO_ESCRITO_BUNDLE_MODEL)
     if(WIN32)
@@ -427,7 +422,7 @@ else()
 
     set(CPACK_RPM_PACKAGE_LICENSE "MIT")
     set(CPACK_RPM_PACKAGE_GROUP "Applications/Multimedia")
-    # Qt comes from the distribution. The models come with the package when
+    # Qt comes from the distribution. The model comes with the package when
     # ECO_ESCRITO_BUNDLE_MODEL is on, as it is for every release.
     set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtbase-gui")
     set(CPACK_RPM_PACKAGE_AUTOREQPROV "no")

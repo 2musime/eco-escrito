@@ -36,7 +36,7 @@ network namespace whose only interface is a downed loopback:
 
 ```bash
 unshare -rn -- ./build-release/eco_escrito_cli \
-  --benchmark --input speech.wav models/ggml-base.en.bin
+  --benchmark --input speech.wav models/ggml-small.en.bin
 ```
 
 The GUI also starts and runs normally in that namespace.

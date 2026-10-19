@@ -3,7 +3,7 @@
 Use `--stream` to transcribe while recording:
 
 ```bash
-./build-release/eco_escrito_cli models/ggml-base.en.bin --stream
+./build-release/eco_escrito_cli models/ggml-small.en.bin --stream
 ```
 
 The streaming path:
