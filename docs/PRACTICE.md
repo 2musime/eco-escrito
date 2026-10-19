@@ -85,9 +85,8 @@ To see it without the interface:
 - Whisper still hears words, not sounds. A wrong vowel inside a word it
   recognises with confidence will be marked right. Catching that needs a
   phoneme recogniser, which this application does not have yet.
-- **More accurate** (`small.en`) hears noticeably better than **Faster**
-  (`base.en`) on the same recording. Practise uses whichever is chosen on Write
-  by Voice.
+- Practise uses `small.en`, which hears noticeably better than the smaller
+  `base.en` on the same recording.
 - English only.
 
 The logic lives in `practice.h` and is covered by the unit tests.

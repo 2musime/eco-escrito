@@ -5,10 +5,10 @@ interface. The app itself drives it in the background, so everything the app
 does can also be scripted.
 
 ```bash
-eco_escrito_cli models/ggml-base.en.bin --stream     # live dictation
+eco_escrito_cli models/ggml-small.en.bin --stream     # live dictation
 eco_escrito_cli --list-devices                       # show microphones
-eco_escrito_cli models/ggml-base.en.bin --device 1   # use a specific one
-eco_escrito_cli --benchmark --input speech.wav models/ggml-base.en.bin
+eco_escrito_cli models/ggml-small.en.bin --device 1   # use a specific one
+eco_escrito_cli --benchmark --input speech.wav models/ggml-small.en.bin
 eco_escrito_cli --compare models/ggml-base.en.bin models/ggml-small.en.bin
 ```
 

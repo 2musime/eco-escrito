@@ -10,14 +10,14 @@
     https://huggingface.co/ggerganov/whisper.cpp
 
 .PARAMETER Model
-    base.en (default), small.en, tiny.en, medium.en or large-v3.
+    small.en (default), base.en, tiny.en, medium.en or large-v3.
 
 .PARAMETER Destination
     Where to put it. Defaults to %LOCALAPPDATA%\eco-escrito\models, which is
     one of the directories the application accepts a model from.
 
 .EXAMPLE
-    .\install-model.ps1 base.en
+    .\install-model.ps1 small.en
 
 .EXAMPLE
     .\install-model.ps1 small.en -Destination D:\models
@@ -25,7 +25,7 @@
 [CmdletBinding()]
 param(
     [ValidateSet('tiny.en', 'base.en', 'small.en', 'medium.en', 'large-v3')]
-    [string]$Model = 'base.en',
+    [string]$Model = 'small.en',
 
     [string]$Destination
 )

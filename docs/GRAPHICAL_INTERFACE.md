@@ -50,7 +50,6 @@ footer:
 | Instead of | It says |
 |---|---|
 | Transcripts, Speeches | **My Words** |
-| Speed: base.en / Accuracy: small.en | **Faster** / **More accurate** |
 | 15 seconds | **Up to 15 sec** |
 | Keep audio files | **Keep the recording** |
 | Start / Stop Recording | **Start Speaking** / **Stop** |
@@ -161,7 +160,7 @@ put pale text on white.
 ## Write by Voice
 
 ```text
-   [Faster v] [Default microphone v] [Up to 1 min v]  [x] Keep the recording
+   [Default microphone v] [Up to 1 min v]  [x] Keep the recording
 
                            00:23 / 01:00
                             ( ■  Stop )
@@ -173,17 +172,13 @@ put pale text on white.
 +-------------------------------------------------------------------+
 ```
 
-**Settings need no labels.** Each value says what it is (`Faster`,
-`Up to 1 min`, the microphone's name), and each list is sized to its contents.
-The model's real name is in the tooltip and the footer.
+**Settings need no labels.** Each value says what it is (`Up to 1 min`, the
+microphone's name), and each list is sized to its contents.
 
-**Both models come with the application.** The packages install `base.en`
-(**Faster**) and `small.en` (**More accurate**), so either can be chosen at
-once. In a build made without them, a missing model reads *(not installed)*, is
-greyed out, and its tooltip gives the command that adds it. The list is checked again whenever the window comes back
-into focus and before each recording, so a model installed meanwhile can be
-chosen straight away. If the chosen model disappears, the list falls back to
-**Faster**, then to any installed model.
+**One model, so no model choice.** The packages install `small.en`, chosen for
+accuracy, and it is the only model the application uses. A selector with one
+entry would be a choice of nothing, so it is hidden; the model's name is in the
+footer. If the model is missing, starting says so and points to INSTALL.md.
 
 **One button.** It reads **Start Speaking**, then **Stop** (in red) while you
 speak, then **Cancel** while the model loads or your words are being written
@@ -384,10 +379,10 @@ is asked to quit, given three seconds, then killed.
 
 ## Long recordings
 
-Limits are 15, 45 and 60 seconds, and 5 or 10 minutes for dictation. `base.en`
-is the default model because it transcribes roughly 3.5 times faster than
-`small.en`, which is what decides whether a ten minute recording takes about a
-minute to transcribe or several.
+Limits are 15, 45 and 60 seconds, and 5 or 10 minutes for dictation. `small.en`
+transcribes about half as fast as real time on four cores, so a ten minute
+recording takes several minutes to write down; the progress bar shows how far
+it has got.
 
 The final pass is chunked, and the worker reports each chunk as it finishes:
 

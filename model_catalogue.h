@@ -1,7 +1,7 @@
 #pragma once
 
-// The Whisper models the interface offers, and the directories a model is
-// looked for in. The interface and the worker both read this, so a model the
+// The Whisper model the interface uses, and the directories a model is looked
+// for in. The interface and the worker both read this, so a model the
 // interface offers is always one the worker will find.
 
 #include <filesystem>
@@ -16,20 +16,20 @@ struct CatalogueModel {
     const char* description;  // one line on when to choose it
 };
 
-// Fastest first. The release packages install both (ECO_ESCRITO_BUNDLE_MODEL
-// in CMakeLists.txt), and each name is one the install scripts accept, for a
-// build made without them.
+// small.en alone: it hears noticeably better than base.en, which matters more
+// to a learner than the 3.5 times it takes. The release packages install it
+// (ECO_ESCRITO_BUNDLE_MODEL in CMakeLists.txt), and its name is one the install
+// scripts accept, for a build made without it. With a single entry the
+// interface hides the selector rather than offer a choice of one.
 inline const std::vector<CatalogueModel>& catalogue_models() {
     static const std::vector<CatalogueModel> models{
-        {"base.en", "ggml-base.en.bin", "Faster",
-         "Suits most people."},
-        {"small.en", "ggml-small.en.bin", "More accurate",
-         "About 3.5 times slower than Faster."},
+        {"small.en", "ggml-small.en.bin", "Accurate",
+         "English speech model (small.en)."},
     };
     return models;
 }
 
-inline const char* default_catalogue_model() { return "ggml-base.en.bin"; }
+inline const char* default_catalogue_model() { return "ggml-small.en.bin"; }
 
 // Where a model may live, in search order. The command line can approve more
 // with --model-dir; these are the ones that need no approval.

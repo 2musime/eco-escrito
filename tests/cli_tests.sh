@@ -10,7 +10,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # CTest passes the real path. The default is for running the suite by hand, and
 # has to find the binary wherever this platform's generator put it.
 BIN="${1:-$(binary_dir "$ROOT/build-release")/eco_escrito_cli$EXE}"
-MODEL="$ROOT/models/ggml-base.en.bin"
+MODEL="$ROOT/models/ggml-small.en.bin"
 cd "$ROOT" || exit 1
 if [ ! -f "$MODEL" ]; then
     echo "SKIP: $MODEL is not present; download a model to run these tests."

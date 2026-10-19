@@ -1104,12 +1104,12 @@ bool parse_options(
             return false;
         }
         if (model_paths.empty()) {
-            model_paths.emplace_back("models/ggml-base.en.bin");
+            model_paths.emplace_back("models/ggml-small.en.bin");
         }
         return true;
     }
     if (model_paths.empty() && !compare_mode) {
-        model_paths.emplace_back("models/ggml-base.en.bin");
+        model_paths.emplace_back("models/ggml-small.en.bin");
     }
     if (!compare_mode && model_paths.size() > 1) {
         std::cerr << "Use --compare to test multiple models." << std::endl;
