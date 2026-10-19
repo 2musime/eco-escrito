@@ -25,6 +25,13 @@ eco-escrito-install-model base.en --user
 | `base.en` | 142 MB | the default; fast, good accuracy |
 | `small.en` | 466 MB | slower, better accuracy |
 | `tiny.en` | 75 MB | fastest, least accurate |
+| `medium.en` | 1.5 GB | slow, most accurate English model |
+| `large-v3` | 3.1 GB | slowest; needs about 4 GB of memory |
+
+Install as many as you like. The graphical interface lists all five and lets
+you choose any that is installed. Models are found in
+`~/.local/share/eco-escrito/models` (`--user`) and
+`/usr/share/eco-escrito/models` (`--system`).
 
 Then check it works:
 
