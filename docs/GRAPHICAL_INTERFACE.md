@@ -50,7 +50,7 @@ footer:
 | Instead of | It says |
 |---|---|
 | Transcripts, Speeches | **My Words** |
-| Speed: base.en / Accuracy: small.en | **Faster** / **More accurate** |
+| tiny.en / base.en / small.en / medium.en / large-v3 | **Fastest** / **Faster** / **More accurate** / **Most accurate** / **Largest** |
 | 15 seconds | **Up to 15 sec** |
 | Keep audio files | **Keep the recording** |
 | Start / Stop Recording | **Start Speaking** / **Stop** |
@@ -176,6 +176,14 @@ put pale text on white.
 **Settings need no labels.** Each value says what it is (`Faster`,
 `Up to 1 min`, the microphone's name), and each list is sized to its contents.
 The model's real name is in the tooltip and the footer.
+
+**Every model is listed; only installed ones can be chosen.** The model list
+shows all five models the install scripts can fetch. One that is not on this
+computer reads *(not installed)*, is greyed out, and its tooltip gives the
+command that adds it. The list is checked again whenever the window comes back
+into focus and before each recording, so a model installed meanwhile can be
+chosen straight away. If the chosen model disappears, the list falls back to
+**Faster**, then to any installed model.
 
 **One button.** It reads **Start Speaking**, then **Stop** (in red) while you
 speak, then **Cancel** while the model loads or your words are being written

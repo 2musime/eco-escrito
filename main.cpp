@@ -5,6 +5,7 @@
 #include "audio_ring_buffer.h"
 #include "diagnostics.h"
 #include "file_storage.h"
+#include "model_catalogue.h"
 #include "model_info.h"
 #include "practice.h"
 #include "speech_detection.h"
@@ -1232,18 +1233,7 @@ int run(int argc, char** argv) {
         std::cout << "Audio retention is off; no WAV file will be kept." << std::endl;
     }
 
-    std::vector<fs::path> model_roots{
-        fs::current_path() / "models",
-        data_directory / "models"
-    };
-    // A model shipped beside the application. This is how a package that
-    // includes one supplies it, and it is the only root that does not depend on
-    // the working directory -- which nothing sets when a program is started
-    // from a menu entry or a desktop shortcut.
-    const fs::path beside_executable = executable_directory();
-    if (!beside_executable.empty()) {
-        model_roots.push_back(beside_executable / "models");
-    }
+    std::vector<fs::path> model_roots = standard_model_roots(data_directory);
     for (const std::string& directory : model_directories) {
         model_roots.emplace_back(directory);
     }

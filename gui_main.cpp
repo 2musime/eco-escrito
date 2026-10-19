@@ -1,4 +1,5 @@
 #include "audio_player.h"
+#include "model_catalogue.h"
 #include "partial_text.h"
 #include "practice.h"
 #include "transcript_library.h"
@@ -37,7 +38,9 @@
 #include <QLocale>
 #include <QActionGroup>
 #include <QShortcut>
+#include <QSignalBlocker>
 #include <QSlider>
+#include <QStandardItemModel>
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QStyle>
@@ -228,15 +231,8 @@ public:
 
         // Self-describing values, so the row needs no labels.
         model_selector_ = new QComboBox(recorder);
-        // base.en first, so it is the default: it transcribes roughly 3.5x
-        // faster than small.en, which matters most on long recordings.
-        // A name, not a path. The worker searches its approved directories for
-        // it, which is the only thing that works when the application is
-        // started from a menu entry and inherits no useful working directory.
-        model_selector_->addItem("Faster", "ggml-base.en.bin");
-        model_selector_->addItem("More accurate", "ggml-small.en.bin");
         model_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-        model_selector_->setAccessibleName("Faster or more accurate");
+        model_selector_->setAccessibleName("Speech model");
 
         device_selector_ = new QComboBox(recorder);
         device_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
@@ -479,6 +475,8 @@ public:
         play_timer_->setInterval(200);
 
         populate_devices();
+        refresh_models();
+        connect(model_selector_, &QComboBox::currentIndexChanged, this, [this] { apply_state(state_); });
         // Resolved here rather than waiting for the worker, so saved
         // transcripts can be read before anything has been recorded.
         data_directory_ = path_text(application_data_directory());
@@ -567,6 +565,9 @@ private:
         cancelled_ = false;
         chunks_done_ = 0;
         chunks_total_ = 0;
+        // A model installed since the window last had focus is picked up, and
+        // one removed meanwhile is not handed to the worker.
+        refresh_models();
         const QString model = model_selector_->currentData().toString();
         const QString duration = practice ? QString::number(practice_limit_seconds)
                                           : duration_selector_->currentData().toString();
@@ -1056,7 +1057,7 @@ private:
             ? QString()
             : "You can change this when you have finished.";
         model_selector_->setToolTip(ui_state_is_idle(state)
-            ? "Faster suits most people. More accurate is about 3.5 times slower."
+            ? model_selector_->currentData(Qt::ToolTipRole).toString()
             : settings_tip);
         duration_selector_->setToolTip(settings_tip);
         keep_audio_->setToolTip(ui_state_is_idle(state)
@@ -1600,7 +1601,7 @@ private:
             return message + " Check that a microphone is plugged in and that Eco-escrito may use it.";
         }
         if (category == "MODEL") {
-            return message + " Choose Faster, or add the speech model again (see INSTALL.md).";
+            return message + " Choose another model, or add this one again (see INSTALL.md).";
         }
         if (category == "RECORDING") {
             return message + " Try again, a little closer to the microphone.";
@@ -1768,6 +1769,80 @@ private:
         }
         transcript_->setPlainText(final_transcription_);
         transcript_->moveCursor(QTextCursor::End);
+    }
+
+    // Installing a model happens outside the application, so coming back to
+    // the window is when a new one is most likely to have appeared.
+    void changeEvent(QEvent* event) override {
+        if (event->type() == QEvent::ActivationChange && isActiveWindow() &&
+            ui_state_is_idle(state_)) {
+            refresh_models();
+        }
+        QMainWindow::changeEvent(event);
+    }
+
+    // Every model the installers can fetch. One not on this computer is listed
+    // but greyed out, its tooltip saying how to add it, so choosing a model can
+    // never end in "file not found". The item's data is a name, not a path: the
+    // worker searches the same directories for it, which is the only thing
+    // that works when the application is started from a menu entry and
+    // inherits no useful working directory.
+    void refresh_models() {
+        const QString chosen = model_selector_->currentData().toString();
+        const std::vector<fs::path> roots = standard_model_roots(application_data_directory());
+        auto* items = qobject_cast<QStandardItemModel*>(model_selector_->model());
+
+        const QSignalBlocker blocker(model_selector_);
+        model_selector_->clear();
+        int chosen_index = -1;
+        int default_index = -1;
+        int first_installed = -1;
+        for (const CatalogueModel& model : catalogue_models()) {
+            const bool installed = !find_catalogue_model(model.file, roots).empty();
+            const QString file = QString::fromUtf8(model.file);
+            model_selector_->addItem(installed ? QString::fromUtf8(model.label)
+                                               : QString("%1 (not installed)").arg(model.label),
+                                     file);
+            const int index = model_selector_->count() - 1;
+            model_selector_->setItemData(index,
+                installed ? QString::fromUtf8(model.description) : install_hint(model.name),
+                Qt::ToolTipRole);
+            if (!installed) {
+                items->item(index)->setEnabled(false);
+                continue;
+            }
+            if (first_installed < 0) {
+                first_installed = index;
+            }
+            if (file == chosen) {
+                chosen_index = index;
+            }
+            if (file == QLatin1String(default_catalogue_model())) {
+                default_index = index;
+            }
+        }
+
+        // Keep the choice if it is still there, then the default, then any
+        // installed model. With none at all, the default stays selected so
+        // starting explains that it is missing.
+        int selected = chosen_index >= 0 ? chosen_index
+                     : default_index >= 0 ? default_index
+                                          : first_installed;
+        if (selected < 0) {
+            selected = model_selector_->findData(QString::fromUtf8(default_catalogue_model()));
+        }
+        model_selector_->setCurrentIndex(selected);
+        apply_state(state_);
+    }
+
+    static QString install_hint(const char* name) {
+#if defined(Q_OS_WIN)
+        return QString("Not on this computer yet. To add it, run in PowerShell:\n"
+                       "& \"$env:ProgramFiles\\Eco-escrito\\bin\\install-model.ps1\" %1").arg(name);
+#else
+        return QString("Not on this computer yet. To add it, run:\n"
+                       "eco-escrito-install-model %1 --user").arg(name);
+#endif
     }
 
     void closeEvent(QCloseEvent* event) override {
