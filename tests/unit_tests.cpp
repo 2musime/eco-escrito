@@ -3,6 +3,7 @@
 #include "audio_ring_buffer.h"
 #include "diagnostics.h"
 #include "file_storage.h"
+#include "model_catalogue.h"
 #include "model_info.h"
 #include "practice.h"
 #include "speech_detection.h"
@@ -978,6 +979,44 @@ void test_practice_sentences() {
 
 }  // namespace
 
+void test_model_catalogue() {
+    harness::begin("Model catalogue");
+
+    const std::vector<CatalogueModel>& models = catalogue_models();
+    CHECK("both bundled models are offered", models.size() == 2);
+    bool default_listed = false;
+    bool files_match_names = true;
+    for (const CatalogueModel& model : models) {
+        default_listed = default_listed || std::string(model.file) == default_catalogue_model();
+        files_match_names = files_match_names &&
+            std::string(model.file) == "ggml-" + std::string(model.name) + ".bin";
+    }
+    CHECK("the default model is in the catalogue", default_listed);
+    CHECK("each file is named as the install scripts save it", files_match_names);
+
+    const fs::path data = scratch_directory() / "catalogue-data";
+    const std::vector<fs::path> roots = standard_model_roots(data);
+    CHECK("the data directory is searched",
+          std::find(roots.begin(), roots.end(), data / "models") != roots.end());
+#if !defined(_WIN32)
+    CHECK("the system directory install-model.sh --system writes to is searched",
+          std::find(roots.begin(), roots.end(), fs::path("/usr/share/eco-escrito/models")) != roots.end());
+#endif
+
+    const fs::path first = scratch_directory() / "catalogue-first";
+    const fs::path second = scratch_directory() / "catalogue-second";
+    fs::create_directories(first);
+    fs::create_directories(second);
+    { std::ofstream(second / "ggml-small.en.bin") << "x"; }
+    CHECK("an installed model is found in a later root",
+          find_catalogue_model("ggml-small.en.bin", {first, second}) == second / "ggml-small.en.bin");
+    CHECK("a missing model is reported as missing",
+          find_catalogue_model("ggml-medium.en.bin", {first, second}).empty());
+    fs::create_directories(first / "ggml-tiny.en.bin");
+    CHECK("a directory with a model's name is not a model",
+          find_catalogue_model("ggml-tiny.en.bin", {first}).empty());
+}
+
 int main() {
     test_wav_header_generation();
     test_wav_size_limits();
@@ -987,6 +1026,7 @@ int main() {
     test_vad_boundaries();
     test_overlapping_segments();
     test_model_paths();
+    test_model_catalogue();
     test_ring_buffer_overflow();
     test_drain_past_the_limit();
     test_file_write_failures();

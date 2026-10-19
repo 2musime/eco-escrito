@@ -10,21 +10,14 @@ transcribed on your own machine; nothing is uploaded. See
 sudo dnf install ./eco-escrito-*-Linux.rpm
 ```
 
-The package pulls in `qt6-qtbase-gui`. It does **not** include a speech model:
-models are hundreds of megabytes and downloading one is the only step that ever
-touches the network.
+The package pulls in `qt6-qtbase-gui` and **includes both speech models**, in
+`/usr/share/eco-escrito/models`. There is nothing else to download: choose
+either one in the application.
 
-Install a model after the application:
-
-```bash
-eco-escrito-install-model base.en --user
-```
-
-| Model | Size | Use |
-|---|---|---|
-| `base.en` | 142 MB | the default; fast, good accuracy |
-| `small.en` | 466 MB | slower, better accuracy |
-| `tiny.en` | 75 MB | fastest, least accurate |
+| In the application | Model | Size | Use |
+|---|---|---|---|
+| **Faster** | `base.en` | 142 MB | the default; fast, good accuracy |
+| **More accurate** | `small.en` | 466 MB | about 3.5 times slower, better accuracy |
 
 Then check it works:
 
@@ -39,15 +32,12 @@ The GUI also appears in the desktop menu under Sound &amp; Video.
 ## From a package (Windows)
 
 Run `eco-escrito-<version>-win64.exe` and accept the default location. The
-installer places the program, the Whisper libraries, the Qt libraries **and the
-`base.en` speech model** in one directory, installs the Microsoft Visual C++
+installer places the program, the Whisper libraries, the Qt libraries **and both
+speech models** (`base.en` for **Faster**, `small.en` for **More accurate**) in
+one directory, installs the Microsoft Visual C++
 runtime if the machine lacks it, and adds **Eco-escrito** to the Start Menu and
 the desktop. There is nothing else to download and nothing to configure: open
 it and record.
-
-That is the only difference from the Fedora package, where the model is fetched
-separately. Windows has no distribution to provide one, and a first run that
-ends in a PowerShell command is a poor way to meet an application.
 
 Windows will warn before it runs: the installer is not code-signed, so
 SmartScreen shows *"Windows protected your PC"*. Choose **More info**, then
@@ -55,18 +45,11 @@ SmartScreen shows *"Windows protected your PC"*. Choose **More info**, then
 certificate, and you should be suspicious of any download that asks you to
 bypass the warning -- verify the file came from this project's releases page.
 
-The ZIP is the same files, model included, with no installer and no Start Menu
+The ZIP is the same files, models included, with no installer and no Start Menu
 entry. Unpack it anywhere and run `bin\eco_escrito.exe`. Keep the `models`
 folder beside the executable; that is where it is found.
 
-To use a different model, `small.en` for better accuracy:
-
-```powershell
-& "$env:ProgramFiles\Eco-escrito\bin\install-model.ps1" small.en
-```
-
-It downloads into `%LOCALAPPDATA%\eco-escrito\models` and prints the file's
-SHA-256. Then check the installation:
+Check the installation:
 
 ```powershell
 & "$env:ProgramFiles\Eco-escrito\bin\eco_escrito_cli.exe" --version
@@ -161,7 +144,8 @@ you. Nothing is left elsewhere.
 ## Known limitations
 
 - x86-64 and CPU only, with no GPU backend.
-- English only: the `base.en` and `small.en` models are the ones tested.
+- English only: the `base.en` and `small.en` models are the ones offered and
+  tested.
   Multilingual models load, but they are untested.
 - Packaged for Fedora (`.rpm`) and Windows (installer). There is no `.deb` or
   Flatpak package.

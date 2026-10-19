@@ -177,6 +177,14 @@ put pale text on white.
 `Up to 1 min`, the microphone's name), and each list is sized to its contents.
 The model's real name is in the tooltip and the footer.
 
+**Both models come with the application.** The packages install `base.en`
+(**Faster**) and `small.en` (**More accurate**), so either can be chosen at
+once. In a build made without them, a missing model reads *(not installed)*, is
+greyed out, and its tooltip gives the command that adds it. The list is checked again whenever the window comes back
+into focus and before each recording, so a model installed meanwhile can be
+chosen straight away. If the chosen model disappears, the list falls back to
+**Faster**, then to any installed model.
+
 **One button.** It reads **Start Speaking**, then **Stop** (in red) while you
 speak, then **Cancel** while the model loads or your words are being written
 down. `Ctrl+R` and `Esc` do the same.
